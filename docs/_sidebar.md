@@ -1,4 +1,3 @@
-- [Home Page](/)
 - [Introduction](/README.md)
 - [Data Structure&Algorithms](dsa/DataStructure&Algorithms.md)
 - [NLP](nlp/README.md)
