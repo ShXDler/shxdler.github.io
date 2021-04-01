@@ -1,7 +1,8 @@
-# Myblogs
+# RIN
 
 
 > だからからサイレンス　響くためと
 
-[知乎](https://www.zhihu.com/people/yaodong-xin)
-[滚动鼠标](#简介)
+[Zhihu](https://www.zhihu.com/people/yaodong-xin)
+[Github](https://github.com/ShXDler/)
+[ENTER](README.md)

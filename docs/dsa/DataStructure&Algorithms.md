@@ -1,9 +1,3 @@
----
-title: Data Structure & Algorithms
-tags: Leetcode
-mathjax: true
----
-
 # 数组
 
 # 链表
