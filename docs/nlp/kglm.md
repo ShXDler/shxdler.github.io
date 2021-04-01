@@ -20,33 +20,33 @@
 
 传统意义上的语言模型计算的都是在已知部分文本内容时单词出现的条件概率$p(x_t|x_{<t})$ ，以循环神经网络（RNN）为例：
 
-$p(x_t|x_{<t})={\rm softmax}({\bf W}_h{\bf h}_t+{\bf b})\\ {\bf h}_t={\rm RNN}({\bf h}_{t-1},{\rm x}_{t-1})\\$ 
+$$p(x_t|x_{<t})={\rm softmax}({\bf W}_h{\bf h}_t+{\bf b})\\ {\bf h}_t={\rm RNN}({\bf h}_{t-1},{\rm x}_{t-1})$$
 
 本文使用了LSTM进行循环模块的计算。
 
 而知识图谱则是有向标注图，包含实体和实体间的关系： 
 
-${\cal KG}=\{(p,r,e)|p\in{\cal E},r\in{\cal R},e\in{\cal E}\}\\ $ 
+$${\mathcal KG}=\{(p,r,e)|p\in{\mathcal E},r\in{\mathcal R},e\in{\mathcal E}\}$$ 
 
 而本文使用的局部知识图谱使用的是一个子集：
 
-${\cal KG}_{<t}=\{(p,r,e)|p\in{\cal E}_{<t},r\in{\cal R},e\in{\cal E}\}\\$ 
+$${\mathcal KG}_{<t}=\{(p,r,e)|p\in{\mathcal E}_{<t},r\in{\mathcal R},e\in{\mathcal E}\}$$
 
 ## 2.1 语言生成
 
-KGLM的主要目标是从知识图谱中生成实体和事实，它会首先将上文中已经出现的实体囊括进局部知识图谱中，以便生成上文中已经出现过的事实。同时会进一步将能够反映新实体的额外实体和事实加入局部知识图谱。正式来讲，模型计算 $p(x_t,{\cal E}_t|x_{<t},{\cal E}_{<t})$ 的过程如下：
+KGLM的主要目标是从知识图谱中生成实体和事实，它会首先将上文中已经出现的实体囊括进局部知识图谱中，以便生成上文中已经出现过的事实。同时会进一步将能够反映新实体的额外实体和事实加入局部知识图谱。正式来讲，模型计算 $p(x_t,{\mathcal E}_t|x_{<t},{\mathcal E}_{<t})$ 的过程如下：
 
-①决定 $x_t$ 的类型，记做 $t_t$ 。它反映了一个实体是否在 ${\cal KG}_{<t}$ 内或者不是一个实体
+①决定 $x_t$ 的类型，记做 $t_t$ 。它反映了一个实体是否在 ${\mathcal KG}_{<t}$ 内或者不是一个实体
 
-a. 如果 $t_t={\sf new}$ ，则从全体实体空间 $\cal E$ 中选择下一个实体 $e_t$ 
+a. 如果 $t_t={\sf new}$ ，则从全体实体空间 $\mathcal E$ 中选择下一个实体 $e_t$ 
 
-b. 如果 $t_t=\sf related$ ，则首先从 ${\cal E}_{<t}$ 中选择父实体 $p_t$ ，并从 $\{(p,r,e)\in{\cal KG}_{>t}|p=p_t\}$ 中选择事实关系 $r_t$ ，再从 $\{e|(p_t,r_t,e)\in{\cal KG}_{<t}\}$ 中选择尾实体 $e_t$ 
+b. 如果 $t_t=\sf related$ ，则首先从 ${\mathcal E}_{<t}$ 中选择父实体 $p_t$ ，并从 $\{(p,r,e)\in{\mathcal KG}_{>t}|p=p_t\}$ 中选择事实关系 $r_t$ ，再从 $\{e|(p_t,r_t,e)\in{\mathcal KG}_{<t}\}$ 中选择尾实体 $e_t$ 
 
 c. 如果 $t_t= \emptyset$ ，则 $e_t=\emptyset$ 
 
 ②在 $e_t$ 的条件下生成 $x_t$ 
 
-③如果 $e_t\notin{\cal E}_{<t}$ ，则扩增局部图谱： ${\cal E}_{<(t+1)}\leftarrow{\cal E}_{<t}\cup e_t$ ；否则保持不变 ${\cal E}_{<(t+1)}\leftarrow{\cal E}_{<t}$ 。
+③如果 $e_t\notin{\mathcal E}_{<t}$ ，则扩增局部图谱： ${\mathcal E}_{<(t+1)}\leftarrow{\mathcal E}_{<t}\cup e_t$ ；否则保持不变 ${\mathcal E}_{<(t+1)}\leftarrow{\mathcal E}_{<t}$ 。
 
 对于要生成已经提到过的实体，作者使用了 ${\sf Reflexive}$ 关系进行自连接。
 
@@ -56,7 +56,7 @@ c. 如果 $t_t= \emptyset$ ，则 $e_t=\emptyset$
 
 <center style="color:#C0C0C0;text-decoration:underline">图2 KGLM语句生成算法模式图</center>
 
-上述算法计算的 $p(x_t,{\cal E}_t|x_{<t},{\cal E}_{<t})$ 与 $p(x_t|x_{<t})$ 有些许不同，为解决这个问题，作者在后文提到使用了 $p({\rm x})=\sum_{\cal E}p({\rm x},{\cal E})$ 进行了单词实体的边际概率计算。
+上述算法计算的 $p(x_t,{\mathcal E}_t|x_{<t},{\mathcal E}_{<t})$ 与 $p(x_t|x_{<t})$ 有些许不同，为解决这个问题，作者在后文提到使用了 $p({\rm x})=\sum_{\mathcal E}p({\rm x},{\mathcal E})$ 进行了单词实体的边际概率计算。
 
 ## 2.2 分布参数化
 
@@ -64,9 +64,9 @@ c. 如果 $t_t= \emptyset$ ，则 $e_t=\emptyset$
 
 **挑选实体**：本文同样对所有实体和关系进行了预训练嵌入（记做 $\bf v$ ）。
 
-a. 在 $t_t=\sf new$ 时，模型使用 $p(e_t)={\rm softmax}({\bf v}_e\cdot({\bf h}_{t,p}+{\bf h}_{t,r})), \ e\in{\cal E}$ 计算概率，其中使用父级实体和关系的隐状态是为了模仿TransE的结构，作者也是用TranE架构进行实体和关系的嵌入。
+a. 在 $t_t=\sf new$ 时，模型使用 $p(e_t)={\rm softmax}({\bf v}_e\cdot({\bf h}_{t,p}+{\bf h}_{t,r})), \ e\in{\mathcal E}$ 计算概率，其中使用父级实体和关系的隐状态是为了模仿TransE的结构，作者也是用TranE架构进行实体和关系的嵌入。
 
-b. 在 $t_t=\sf related$ 时，模型使用 $p(p_t)={\rm softmax}({\bf v}_p\cdot{\bf h}_{t,p}),\ p\in{\cal E}_t$ 计算父级实体概率，使用 $p(r_t)={\rm softmax}({\bf v}_r\cdot{\bf h}_{t,r}),\ r\in\{r|(p_t,r,e)\in{\cal KG}_t\}$ 计算关系概率。在得到了 $p_t$ 和 $r_t$ 后，也就确定了 $e_t$ 的取值，如果有多个选择就随机挑选。
+b. 在 $t_t=\sf related$ 时，模型使用 $p(p_t)={\rm softmax}({\bf v}_p\cdot{\bf h}_{t,p}),\ p\in{\mathcal E}_t$ 计算父级实体概率，使用 $p(r_t)={\rm softmax}({\bf v}_r\cdot{\bf h}_{t,r}),\ r\in\{r|(p_t,r,e)\in{\mathcal KG}_t\}$ 计算关系概率。在得到了 $p_t$ 和 $r_t$ 后，也就确定了 $e_t$ 的取值，如果有多个选择就随机挑选。
 
 **输出实体**：如果 $e_t=\emptyset$ ，这意味着已经没有实体可以继续输出了，模型将在词汇表中再次使用LSTM算法。如果存在实体可以输出，则构建一个原始词汇表和含有所有出现过的实体及其关联词汇表上的分布，这一分布是已知 $e_t$ 和 $x_t$ 下的条件分布。为了计算原始词汇表的得分，作者使用 ${\bf h}_{t,x}'={\bf W}_{\rm proj}[{\bf h}_{t,x};{\bf v}_{e_t}]$ 代替 $h_{t,x}$ ，其中 ${\bf W}_\rm {proj}$ 是将合并向量投影至与 ${\bf h}_{t,x}$ 相同的向量空间的一个可学习权重矩阵。同时，作者也使用了一个LSTM结构进行同义词表概率的计算： $p(x_t=a_j)\propto{\rm exp}[\sigma(({\bf h}_{t,x}')^\top{\bf W}_{\rm copy}){\bf a}_j]$ 。
 
@@ -92,17 +92,17 @@ b. 在 $t_t=\sf related$ 时，模型使用 $p(p_t)={\rm softmax}({\bf v}_p\cdot
 
 # 4.KGLM的训练和推断
 
-**预训练知识图谱嵌入**：为了预测未出现过的字词，本文使用了TransE预训练嵌入模型，在给定 $(p,r,e)$ 时，通过最小化距离 $\delta({\rm v}_p,{\rm v}_r,{\rm v}_e)=||{\rm v}_p+{\rm v}_r-{\rm v}_e||^2$ 学习嵌入向量，最大边际损失函数定义为 ${\cal L}=\max(0,\gamma+\delta({\rm v}_p,{\rm v}_r,{\rm v}_e)-\delta({\rm v}_p',{\rm v}_r,{\rm v}_e'))$ ，这里 $\gamma$ 代表边际， $p'$ 和 $e'$ 是随机选择的实体嵌入。
+**预训练知识图谱嵌入**：为了预测未出现过的字词，本文使用了TransE预训练嵌入模型，在给定 $(p,r,e)$ 时，通过最小化距离 $\delta({\rm v}_p,{\rm v}_r,{\rm v}_e)=||{\rm v}_p+{\rm v}_r-{\rm v}_e||^2$ 学习嵌入向量，最大边际损失函数定义为 ${\mathcal L}=\max(0,\gamma+\delta({\rm v}_p,{\rm v}_r,{\rm v}_e)-\delta({\rm v}_p',{\rm v}_r,{\rm v}_e'))$ ，这里 $\gamma$ 代表边际， $p'$ 和 $e'$ 是随机选择的实体嵌入。
 
 **结合****Linked WikiText-2****进行训练**：KGLM包含许多复杂的步骤，但在*Linked WikiText-2*上的训练是十分直接的，根据数据集上的负对数似然函数得到的损失函数如下：
 
-$\ell(\Theta)=\sum_t\log p(x_t,{\cal E}_t|x_{<t},{\cal E}_{<t};\Theta)\\ $ 
+$$\ell(\Theta)=\sum_t\log p(x_t,{\mathcal E}_t|x_{<t},{\mathcal E}_{<t};\Theta)$$ 
 
 对于有多个父级对象的实体，则首先计算所有父级实体的边际和。
 
-**模型推断**：前文提到，模型的主要目标是计算边际概率 $p({\rm x})=\sum_{\cal E}p({\rm x},{\cal E})$ 而非联合分布概率，然而由于可能的标注存在的联合分布参数空间过于庞大，直接计算边际概率的方法并不可行。作者在此处使用了重要性采样的方法对边际概率进行了合理的估计：
+**模型推断**：前文提到，模型的主要目标是计算边际概率 $p({\rm x})=\sum_{\mathcal E}p({\rm x},{\mathcal E})$ 而非联合分布概率，然而由于可能的标注存在的联合分布参数空间过于庞大，直接计算边际概率的方法并不可行。作者在此处使用了重要性采样的方法对边际概率进行了合理的估计：
 
-$\begin{aligned} p({\rm x})&=\sum_{\cal E}p(x,{\cal E})=\sum_{\cal E}\frac{p({\rm x},{\cal E})}{q({\cal E}|{\rm x})}q({\cal E}|{\rm x})\\ &\approx\frac 1N\sum_{{\cal E}\sim q}\frac{p({\rm x},{\cal E})}{q({\cal E}|{\rm x})} \end{aligned}\\$ 
+$$\begin{aligned} p({\rm x})&=\sum_{\mathcal E}p(x,{\mathcal E})=\sum_{\mathcal E}\frac{p({\rm x},{\mathcal E})}{q({\mathcal E}|{\rm x})}q({\mathcal E}|{\rm x})\\ &\approx\frac 1N\sum_{{\mathcal E}\sim q}\frac{p({\rm x},{\mathcal E})}{q({\mathcal E}|{\rm x})} \end{aligned}$$
 
 # 5.实验结果
 

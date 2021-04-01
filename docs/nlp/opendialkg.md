@@ -12,7 +12,9 @@
 
 # 2.研究方法
 
-本文的核心思想是利用本轮对话及前轮对话内容，结合深度学习算法在知识图谱中进行路径的最优化，以提供最符合下轮与其谈话内容的结果。产生每轮对话算法的输入都为一个三元组 $\{x_e,x_s,x_d\}$ 组成， $x _e$ 为本轮对话的实体集合， $x_s$ 为实体周围的文本内容， $x_d $为前轮对话的内容。而输出则由二元组 $\{y_e,y_r\}$ 组成，分别代表实体路径和关系路径。目标则为找到使得 $score(f_{x\rightarrow y}(x),y')$ 得分函数最大的输出 $y$ ，这样就得到了下一轮对话所包含的实体及其最优路径。
+<div align="center">
+    <img src="https://pic4.zhimg.com/v2-e6b8c2d1d3ff9f7065f30a7a9b98dfdb_b.png">  
+</div>
 
 <div align="center">
     <img src="https://pic4.zhimg.com/v2-e6b8c2d1d3ff9f7065f30a7a9b98dfdb_b.png">  
@@ -24,7 +26,7 @@
 
 **实体表示**：本文使用了知识图谱嵌入的方法对对话提到的实体进行编码，这种方法可以让意思相近的实体在嵌入空间里的分布也更接近，嵌入模型为：
 
-$P\{\mathbb{I}_r(s,o)=1|\theta\}=score(\bf{e}(s),\bf{e}_r(r),\bf{e}(o))\\$ 
+$$P\{\mathbb{I}_r(s,o)=1|\theta\}=score(\bf{e}(s),\bf{e}_r(r),\bf{e}(o))$$ 
 
 其中 $s,r,o$ 分别代表三元组中的主体、关系和客体， $score(\cdot)$ 函数充当了有效关系三元组的似然函数。
 
@@ -38,27 +40,27 @@ $P\{\mathbb{I}_r(s,o)=1|\theta\}=score(\bf{e}(s),\bf{e}_r(r),\bf{e}(o))\\$
 
 通过运用以上方法提取的实体和周围内容的信息后，本文通过构建网络来进行相关实体的预测。基于知识图谱嵌入的思想，得到目标函数如下：
 
-$\min_\bf{W}\cal{L}_f(\bf{x},\bf{y}_\rm{e};\bf{W}_f,W_p)+\cal{L}_{\rm{walk}}(\bf x,y\cal_p;\bf W_p)\\$ 
+$$\min_{\bf{W}}{\mathcal{L}}_f({\bf{x}},{\bf{y}}_{\rm{e}};{\bf{W}}_f,W_p)+{\mathcal{L}}_{\rm{walk}}(\bf x,y_{\mathcal{p}};{\bf W}_p)$$ 
 
-该目标函数使用了$\cal L_f(\cdot)$ 作为监督损失函数，而 $\cal L_\rm{walk}(\cdot)$ 则为知识图谱中衡量路径最优化的损失函数， $\bf W_f$ ， $\bf W_p$ ， $\bf W\rm _{input}$ 均为可学习的参数，分别作为最终得到的实体的分类器,路径搜寻模型和输入编码器。在优化过程中，本文也使用了权重递减的正则化项。
+该目标函数使用了$\mathcal L_f(\cdot)$ 作为监督损失函数，而 ${\mathcal{L}}_{\rm{walk}}(\cdot)$ 则为知识图谱中衡量路径最优化的损失函数， $\bf W_f$ ， $\bf W_p$ ， $\bf W\rm _{input}$ 均为可学习的参数，分别作为最终得到的实体的分类器,路径搜寻模型和输入编码器。在优化过程中，本文也使用了权重递减的正则化项。
 
 ## 2.3 零样本相关分数
 
 本文在知识图谱嵌入空间里使用了零样本相关分数（zeroshot relevance score），提升了模型预测的稳健性，同时也可以在未知领域获得更好的效果。具体来说，在选择损失函数时，本文挑选了可监督的hinge rank损失函数：
 
-$\sum_i  \sum_{{\bf{\tilde{y}}}\neq {\bf y}_{e}^{(i)}}\max[0,{\bf\tilde y }\cdot {\bf y}_{e}^{( \it i )} -{\bf f}({\bf \bar{x}}^{(i)})\cdot({\bf y}_ e^{( i)}-{\bf\tilde y})^\top]\\$ 
+$$\sum_i  \sum_{{\bf{\tilde{y}}}\neq {\bf y}_{e}^{(i)}}\max[0,{\bf\tilde y }\cdot {\bf y}_{e}^{( \it i )} -{\bf f}({\bf \bar{x}}^{(i)})\cdot({\bf y}_ e^{( i)}-{\bf\tilde y})^\top]$$ 
 
 其中 $\bf{f} \rm (\cdot)$ 是一个可以在知识图谱中游走并输出预测实体的变换函数，而 $\bf \tilde y$ 则是从知识图谱实体中随机抽样出的负例。直观上讲，投影嵌入值和标签正确的点积值会更大，而标签错误的则会更小。 $(\bf\tilde y \cdot y\it_e^{\rm(\it i\rm )}\rm)$ 则代表标记正例和负例的相关性。
 
 ## 2.4 知识图谱路径游走
 
-如果产生的候选实体仅仅以相关性得分为依据，那么在指数级别的搜索空间里，模型的预测效果可能不尽如人意。因此，本文定义了基于注意力机制的DialKG图解码器模型，用于修建多余的路径减小搜索空间。解码步骤是典型的LSTM结构，首先基于如下所示的可游走路径的注意力机制，产生 $t$ 步解码时对话内容向量： $\alpha_t=\sigma({\bf W}_{h\alpha}{\bf h}_{t-1}+{\bf W}_{x\alpha}\bar{{\rm x}_t})\\ {\bf z}_t={\bf h}_{t-1}+\sum_{{\bf r}_k\in{\bf R}_{KG}}\alpha_{t,k}{\bf r}_k$ 
+如果产生的候选实体仅仅以相关性得分为依据，那么在指数级别的搜索空间里，模型的预测效果可能不尽如人意。因此，本文定义了基于注意力机制的DialKG图解码器模型，用于修建多余的路径减小搜索空间。解码步骤是典型的LSTM结构，首先基于如下所示的可游走路径的注意力机制，产生 $t$ 步解码时对话内容向量： $$\alpha_t=\sigma({\bf W}_{h\alpha}{\bf h}_{t-1}+{\bf W}_{x\alpha}\bar{{\rm x}_t})\\ {\bf z}_t={\bf h}_{t-1}+\sum_{{\bf r}_k\in{\bf R}_{KG}}\alpha_{t,k}{\bf r}_k$$ 
 
-这里 ${\bf z}_t $ 即为经过其前轮对话实体得到的结果实体文本向量，进而得到：${\bf i}_t =\sigma({\bf W}_{hi}{\bf h}_{t-1}+{\bf W}_{ci}{\bf c}_{t-1})\\ {\bf c}_t = (1-{\bf i}_t)\odot{\bf c}_{t-1}+{\bf i}_t\odot\tanh({\bf W}_{zc}{\bf z}_t+{\bf W}_{hc}{\bf h}_{t-1})\\ {\bf o}_t = \sigma({\bf W}_{zo}{\bf z}_t +{\bf W}_{ho}{\bf h}_{t-1}+{\bf W}_{co}{\bf c}_t)\\ {\bf h}_t={\rm WALK}(\bar x ,{\bf z}_t)={\bf o}_t\odot\tanh({\bf c}_t)$
+这里 ${\bf z}_t $ 即为经过其前轮对话实体得到的结果实体文本向量，进而得到：$${\bf i}_t =\sigma({\bf W}_{hi}{\bf h}_{t-1}+{\bf W}_{ci}{\bf c}_{t-1})\\ {\bf c}_t = (1-{\bf i}_t)\odot{\bf c}_{t-1}+{\bf i}_t\odot\tanh({\bf W}_{zc}{\bf z}_t+{\bf W}_{hc}{\bf h}_{t-1})\\ {\bf o}_t = \sigma({\bf W}_{zo}{\bf z}_t +{\bf W}_{ho}{\bf h}_{t-1}+{\bf W}_{co}{\bf c}_t)\\ {\bf h}_t={\rm WALK}(\bar x ,{\bf z}_t)={\bf o}_t\odot\tanh({\bf c}_t)$$
 
-为训练上面得到的图解码器，本文结合了标注过的游走路径，计算了预测路径和输出结果之间的损失函数 ${\cal L}_{\text{walk}}({\bf x,y})=\sum_{i,t}{\cal L}_{\text{ent}}+{\cal L}_{\text{rel}}$ 。而模型训练完成之后，在每次解码的过程中，都可以对可能的路径计算得分并进行排序：
+为训练上面得到的图解码器，本文结合了标注过的游走路径，计算了预测路径和输出结果之间的损失函数 ${\mathcal L}_{\text{walk}}({\bf x,y})=\sum_{i,t}{\mathcal L}_{\text{ent}}+{\mathcal L}_{\text{rel}}$ 。而模型训练完成之后，在每次解码的过程中，都可以对可能的路径计算得分并进行排序：
 
-${\bf y}_{e,t}^{(i)}=\arg\max{\bf h}_t\cdot{\bf y}_e^{{(i)}^\top}+\sum\alpha_{t,k}{\bf r}_k\cdot{\bf y}_r^{{(i)}^\top}\\ $ 
+$${\bf y}_{e,t}^{(i)}=\arg\max{\bf h}_t\cdot{\bf y}_e^{{(i)}^\top}+\sum\alpha_{t,k}{\bf r}_k\cdot{\bf y}_r^{{(i)}^\top}$$ 
 
 在上式中，加号左边为零样本相关性得分，右边则为软性注意力输出路径得分。
 
