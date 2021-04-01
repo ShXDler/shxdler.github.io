@@ -1,7 +1,5 @@
 *原文地址：ACL2019-*[*OpenDialKG: Explainable Conversational Reasoning with Attention-based Walks over Knowledge Graphs*](https://www.aclweb.org/anthology/P19-1081/)*-Seungwhan Moon, Pararth Shah, Anuj Kumar, Rajen Subba*
 
-#   
-
 # 1.简介
 
 开放式对话系统的实现主要建立在提供与对话内容相关的实体和属性来保证对话内容的连贯性和一致性，本文通过提出一个基于注意力机制的图解码器，在内容量极大的知识图谱中搜寻最优路径，修剪候选实体，并通过零样本学习模型，利用前轮对话的已知信息对候选实体进行重新排序。同时，作者还构建了新的并行开放式对话系统$\leftrightarrow$知识图谱语料库（OpenDialKG），将对话中的实体与人工标注的知识图谱路径连接起来。 

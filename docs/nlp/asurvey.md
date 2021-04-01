@@ -1,7 +1,5 @@
 *原文地址：[A Survey of Knowledge-Enhanced Text Generation](https://arxiv.org/abs/2010.04389)-Wenhao Yu, Chenguang Zhu, Zaitang Li, Zhiting Hu, Qingyun Wang, Heng Ji, Meng Jiang*
 
-#  
-
 # 1.文章简介
 
 在自然语言生成的过程中，利用外部知识增强的模型得到了广泛的应用，本文的内容主要建立在两方面：知识增强的普遍方法和架构，以及针对不同形式的数据的具体操作技术及应用。
