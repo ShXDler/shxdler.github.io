@@ -1,4 +1,4 @@
-原文地址：[A Survey of Knowledge-Enhanced Text Generation](https://arxiv.org/abs/2010.04389)-Wenhao Yu, Chenguang Zhu, Zaitang Li, Zhiting Hu, Qingyun Wang, Heng Ji, Meng Jiang
+*原文地址：[A Survey of Knowledge-Enhanced Text Generation](https://arxiv.org/abs/2010.04389)-Wenhao Yu, Chenguang Zhu, Zaitang Li, Zhiting Hu, Qingyun Wang, Heng Ji, Meng Jiang*
 
 # 简介
 

@@ -1,5 +1,6 @@
-- [简介](/)
+- [Home Page](/)
+- [Introduction](/README.md)
 - [Data Structure&Algorithms](dsa/DataStructure&Algorithms.md)
-- [NLP](nlp/)
+- [NLP](nlp/intro.md)
   - [A survey of knowledge-enhanced Text Generation](nlp/asurvey.md)
   - [OpenDialKG](nlp/opendialKG.md)
