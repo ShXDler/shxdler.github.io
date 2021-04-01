@@ -13,14 +13,32 @@
   <script>
     window.$docsify = {
       name: '',
-      repo: '',
+      repo: 'ShXDler/leetcodebook/',
+      subMaxLevel:2,
+      maxLevel:3,
       loadSidebar: true,
+      alias: {
+          '/nlp/_sidebar.md': '/_sidebar.md'
+      },
       coverpage: true,
-      loadNavbar: true
-    }
+      loadNavbar: true,
+      scrollToTop: {
+        auto: true,
+        text: '↑',
+        right: 15,
+        bottom: 15,
+        offset: 5
+    },
+      pagination: {
+        previousText: '上一文章',
+        nextText: '下一文章',
+        crossChapter: false,
+        crossChapterText: false,
+  },
+}
   </script>
-  <!-- Docsify v4 -->
+  <script src="//unpkg.com/docsify-scroll-to-top/dist/docsify-scroll-to-top.min.js"></script>
+  <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
-  <div id="app"></div>
 </body>
 </html>
