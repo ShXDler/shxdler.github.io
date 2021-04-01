@@ -4,9 +4,11 @@
 
 在语言生成上，现有模型已经很好地做到了语法上的连贯性，在一些常识和基本知识的推断上也表现不错。然而，这些模型往往最多只能记住训练中提到的事实，所以它们在稀缺或未知领域上生成语句的“事实正确”（*factually correct*）能力仍有待提升。作者用一个生动的例子描述了这一现象，在下图的语句中，AWD-LSTM模型认为“Play Station”的可能性比“Game Boy”要高（而实际上该处应该是Game Boy），产生了事实上的错误，其根源在于这一类模型往往是在整体词汇空间上对概率分布进行概率表示。
 
-![img](https://pic1.zhimg.com/v2-30aa69a648468d9f4db171e948e48218_b.png)
+<div align="center">
+    <img src="https://pic1.zhimg.com/v2-30aa69a648468d9f4db171e948e48218_b.png">  
+</div>
 
-图1 示例语句
+<center style="color:#C0C0C0;text-decoration:underline">图1 示例语句</center>
 
 本文提出了知识图谱语言模型（KGLM），利用知识图谱的外部知识进行语言的生成。KGLM模型使用了一个动态的局部知识图谱，局部图谱包含了已经被提到过的实体及其相关实体。在生成语句时，KGLM可以提供新的实体来扩增局部图谱，也可以从现存的局部图谱中选择实体提供给语句生成。在这一过程中，模型将局部图谱和标准词汇表结合起来，从而可以提供数字、日期及其他不常见的实体。
 
@@ -48,9 +50,11 @@ c. 如果 $t_t= \emptyset$ ，则 $e_t=\emptyset$
 
 对于要生成已经提到过的实体，作者使用了 ${\sf Reflexive}$ 关系进行自连接。
 
-![img](https://pic4.zhimg.com/v2-eea6da84eac0e6b798f0d1d075117c27_b.png)
+<div align="center">
+    <img src="https://pic4.zhimg.com/v2-eea6da84eac0e6b798f0d1d075117c27_b.png">  
+</div>
 
-图2 KGLM语句生成算法模式图
+<center style="color:#C0C0C0;text-decoration:underline">图2 KGLM语句生成算法模式图</center>
 
 上述算法计算的 $p(x_t,{\cal E}_t|x_{<t},{\cal E}_{<t})$ 与 $p(x_t|x_{<t})$ 有些许不同，为解决这个问题，作者在后文提到使用了 $p({\rm x})=\sum_{\cal E}p({\rm x},{\cal E})$ 进行了单词实体的边际概率计算。
 
@@ -78,9 +82,11 @@ b. 在 $t_t=\sf related$ 时，模型使用 $p(p_t)={\rm softmax}({\bf v}_p\cdot
 
 **实例标注**：对实例的标注流程如下表所示：
 
-![img](https://pic1.zhimg.com/v2-d5b17056f599f6e4b41c15cf4d7d2ff0_b.png)
+<div align="center">
+    <img src="https://pic1.zhimg.com/v2-d5b17056f599f6e4b41c15cf4d7d2ff0_b.png">  
+</div>
 
-图3 标注流程表
+<center style="color:#C0C0C0;text-decoration:underline">图3 标注流程表</center>
 
 可以看到，每个标注根据当前图谱内容反映当前实体类型是 $\sf new$ 还是 $\sf related$ ，值得注意的是这种方法也会因为Wikidata的数据缺失产生错误。表中反映对 $\sf Nintendo$ 添加了两组联系（ $\sf R:manu$ 和 $\sf platform$ ），尽管这种方法会有缺失和错误现象，但是它生成的标注更多而且更具细节，有助于KGLM的训练。
 

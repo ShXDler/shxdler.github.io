@@ -4,17 +4,21 @@
 
 开放式对话系统的实现主要建立在提供与对话内容相关的实体和属性来保证对话内容的连贯性和一致性，本文通过提出一个基于注意力机制的图解码器，在内容量极大的知识图谱中搜寻最优路径，修剪候选实体，并通过零样本学习模型，利用前轮对话的已知信息对候选实体进行重新排序。同时，作者还构建了新的并行开放式对话系统$\leftrightarrow$知识图谱语料库（OpenDialKG），将对话中的实体与人工标注的知识图谱路径连接起来。 
 
-![img](https://pic2.zhimg.com/v2-6e61d089a632cdd3057470ae38efe9d9_b.png)
+<div align="center">
+    <img src="https://pic2.zhimg.com/v2-6e61d089a632cdd3057470ae38efe9d9_b.png">  
+</div>
 
-图1 （a）开放式推荐对话系统 （b）知识图谱
+<center style="color:#C0C0C0;text-decoration:underline">图1 （a）开放式推荐对话系统 （b）知识图谱</center>
 
 # 2.研究方法
 
 本文的核心思想是利用本轮对话及前轮对话内容，结合深度学习算法在知识图谱中进行路径的最优化，以提供最符合下轮与其谈话内容的结果。产生每轮对话算法的输入都为一个三元组 $\{x_e,x_s,x_d\}$ 组成， $x _e$ 为本轮对话的实体集合， $x_s$ 为实体周围的文本内容， $x_d $为前轮对话的内容。而输出则由二元组 $\{y_e,y_r\}$ 组成，分别代表实体路径和关系路径。目标则为找到使得 $score(f_{x\rightarrow y}(x),y')$ 得分函数最大的输出 $y$ ，这样就得到了下一轮对话所包含的实体及其最优路径。
 
-![img](https://pic4.zhimg.com/v2-e6b8c2d1d3ff9f7065f30a7a9b98dfdb_b.png)
+<div align="center">
+    <img src="https://pic4.zhimg.com/v2-e6b8c2d1d3ff9f7065f30a7a9b98dfdb_b.png">  
+</div>
 
-图2 模型算法架构
+<center style="color:#C0C0C0;text-decoration:underline">图2 模型算法架构</center>
 
 ## 2.1 输入编码
 
