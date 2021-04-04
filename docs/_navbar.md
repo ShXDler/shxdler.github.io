@@ -1,3 +1,3 @@
-* [DS](dsa/)
+* [Machine Learning](ml/)
 * [NLP](nlp/)
 
