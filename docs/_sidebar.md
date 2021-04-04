@@ -4,4 +4,7 @@
   - [A survey of knowledge-enhanced Text Generation](nlp/asurvey.md)
   - [OpenDialKG: Explainable Conversational Reasoning with Attention-based Walks over Knowledge Graphs](nlp/opendialkg.md)
   - [Barack's Wife Hillary: Using Knowledge-Graphs for Fact-Aware Language Modeling](nlp/kglm.md)
-
+  
+- [Machine Learning](ml/)
+  - [Chapter 2 模型评估与选择](ml/Chapter2.md)
+  - 
