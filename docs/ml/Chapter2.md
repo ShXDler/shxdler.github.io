@@ -34,3 +34,28 @@
 
 $$E(f;D)=\frac1m\sum^m_{i=1}(f(x_i)-y_i)^2$$
 
+更一般的：
+
+$$E(f;{\mathcal D})=E[(f(x)-y)^2]=\int_{x\sim{\mathcal D}}(f(x)-y)^2p(x)dx$$
+
+## 2.3.1 错误率（error rate）与精度（accuracy）
+
+错误率：$E(f;D)=\frac1m\sum^m_{i=1}{\mathbb I}(f(x_i)\ne y_i)$
+
+精度：$acc(f;D)=\frac1m\sum^m_{i=1}{\mathbb I}(f(x_i)=y_i)=1-E(f;D)$
+
+更一般的：
+
+错误率：$E(f;{\mathcal D})=P(f(x)\ne y)=\int_{x\sim{\mathcal D}}{\mathbb I}(f(x_i)\ne y_i)p(x)dx$
+
+精度：$acc(f;{\mathcal D})=P(f(x)=y)=\int_{x\sim{\mathcal D}}{\mathbb I}(f(x_i)=y_i)p(x)dx=1-E(f;{\mathcal D})$
+
+## 2.3.2 查准率（precision）与查全率（recall）
+
+直观上来讲，查准率计算的是“预测正例中有多少是真的正例（准不准）”，查全率则是“真的正例中有多少被预测出来了（全不全）”。
+
+查准率$P$和查全率$R$分别定义为：
+
+$$P=\frac{TP}{TP+FP}$$$$R=\frac{TP}{TP+FN}
+
+![机器学习_周志华](D:\hexo\docs\ml\_Chapter2\机器学习_周志华.bmp)
