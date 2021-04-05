@@ -68,7 +68,7 @@ a. 在 $t_t=\sf new$ 时，模型使用 $p(e_t)={\rm softmax}({\bf v}_e\cdot({\b
 
 b. 在 $t_t=\sf related$ 时，模型使用 $p(p_t)={\rm softmax}({\bf v}_p\cdot{\bf h}_{t,p}),\ p\in{\mathcal E}_t$ 计算父级实体概率，使用 $p(r_t)={\rm softmax}({\bf v}_r\cdot{\bf h}_{t,r}),\ r\in\{r|(p_t,r,e)\in{\mathcal KG}_t\}$ 计算关系概率。在得到了 $p_t$ 和 $r_t$ 后，也就确定了 $e_t$ 的取值，如果有多个选择就随机挑选。
 
-**输出实体**：如果 $e_t=\emptyset$ ，这意味着已经没有实体可以继续输出了，模型将在词汇表中再次使用LSTM算法。如果存在实体可以输出，则构建一个原始词汇表和含有所有出现过的实体及其关联词汇表上的分布，这一分布是已知 $e_t$ 和 $x_t$ 下的条件分布。为了计算原始词汇表的得分，作者使用 ${\bf h}_{t,x}'={\bf W}_{\rm proj}[{\bf h}_{t,x};{\bf v}_{e_t}]$ 代替 $h_{t,x}$ ，其中 ${\bf W}_\rm {proj}$ 是将合并向量投影至与 ${\bf h}_{t,x}$ 相同的向量空间的一个可学习权重矩阵。同时，作者也使用了一个LSTM结构进行同义词表概率的计算： $p(x_t=a_j)\propto{\rm exp}[\sigma(({\bf h}_{t,x}')^\top{\bf W}_{\rm copy}){\bf a}_j]$ 。
+**输出实体**：如果 $e_t=\emptyset$ ，这意味着已经没有实体可以继续输出了，模型将在词汇表中再次使用LSTM算法。如果存在实体可以输出，则构建一个原始词汇表和含有所有出现过的实体及其关联词汇表上的分布，这一分布是已知 $e_t$ 和 $x_t$ 下的条件分布。为了计算原始词汇表的得分，作者使用 ${\bf h}_{t,x}'={\bf W}_{\rm proj}[{\bf h}_{t,x};{\bf v}_{e_t}]$ 代替 $h_{t,x}$ ，其中 ${\bf W}_{\rm proj}$ 是将合并向量投影至与 ${\bf h}_{t,x}$ 相同的向量空间的一个可学习权重矩阵。同时，作者也使用了一个LSTM结构进行同义词表概率的计算： $p(x_t=a_j)\propto{\rm exp}[\sigma(({\bf h}_{t,x}')^\top{\bf W}_{\rm copy}){\bf a}_j]$ 。
 
 # 3.*Linked WikiText-2* 数据集
 
@@ -94,7 +94,7 @@ b. 在 $t_t=\sf related$ 时，模型使用 $p(p_t)={\rm softmax}({\bf v}_p\cdot
 
 **预训练知识图谱嵌入**：为了预测未出现过的字词，本文使用了TransE预训练嵌入模型，在给定 $(p,r,e)$ 时，通过最小化距离 $\delta({\rm v}_p,{\rm v}_r,{\rm v}_e)=||{\rm v}_p+{\rm v}_r-{\rm v}_e||^2$ 学习嵌入向量，最大边际损失函数定义为 ${\mathcal L}=\max(0,\gamma+\delta({\rm v}_p,{\rm v}_r,{\rm v}_e)-\delta({\rm v}_p',{\rm v}_r,{\rm v}_e'))$ ，这里 $\gamma$ 代表边际， $p'$ 和 $e'$ 是随机选择的实体嵌入。
 
-**结合****Linked WikiText-2****进行训练**：KGLM包含许多复杂的步骤，但在*Linked WikiText-2*上的训练是十分直接的，根据数据集上的负对数似然函数得到的损失函数如下：
+**结合*Linked WikiText-2*进行训练**：KGLM包含许多复杂的步骤，但在*Linked WikiText-2*上的训练是十分直接的，根据数据集上的负对数似然函数得到的损失函数如下：
 
 $$\ell(\Theta)=\sum_t\log p(x_t,{\mathcal E}_t|x_{<t},{\mathcal E}_{<t};\Theta)$$ 
 
