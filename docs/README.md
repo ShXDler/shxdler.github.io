@@ -2,7 +2,7 @@
 
 > If I have seen further, it is by standing on the shoulders of giants.
 
-X君的个人网站
+X某的个人网站
 
 存放了一些书籍和文献的阅读笔记
 

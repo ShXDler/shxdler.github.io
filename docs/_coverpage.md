@@ -1,9 +1,8 @@
-# Elementary, my dear
+# 过重湖光
 
 
-> だからからサイレンス
+> Elementary, my dear
 >
-> 響くためと
 
 [Zhihu](https://www.zhihu.com/people/yaodong-xin)
 [Github](https://github.com/ShXDler/)
