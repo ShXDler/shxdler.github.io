@@ -52,5 +52,72 @@ $$Gini\_index(D,a)=\sum^V_{v=1}\frac{|D^v|}{|D|}Gini(D^v)$$
 
 剪枝（pruning）可以减轻过拟合现象，分“预剪枝”（prepruning）和“后剪枝”（postpruning）两种：预剪枝是指在生成过程中，如果当前节点不能带来泛化性能的提升，则停止划分；后剪枝是指训练结束后，自下而上地搜索，如果将某一子树替换成叶子节点可以带来泛化性能的提升则进行更换。
 
+下文以该模型为例：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210405143545.png" alt="image-20210405143545274" style="zoom:80%;" /></div>
+
 ## 4.3.1 预剪枝
 
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210405143925.png" alt="image-20210405143925635" style="zoom:80%;" /></div>
+
+如图所示，每次划分时比较前后划分精度是否有提升。预剪枝的计算开销较小，但是它剪掉的节点虽然当前效果不好，但是其后续的划分可能会提升泛化性能，所以预剪枝可能会出现欠拟合的现象。
+
+## 4.3.2 后剪枝
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210405144554.png" alt="image-20210405144554714" style="zoom:80%;" /></div>
+
+后剪枝从下而上遍历节点，如果替换成叶子节点后可以提升效果，则进行替换。后剪枝的时间开销要比未剪枝和预剪枝都要大很多，但是其泛化能力也往往较好。
+
+# 4.4 连续与缺失值
+
+## 4.4.1 连续值处理
+
+连续属性的划分常用二分法（bi-partition），将属性$a$所有的取值$\{a^1,a^2,...a^n\}$进行排序，从划分点集合中选择最优划分点：
+
+$${T_a=\{\frac{a^i+a^{i+1}}2|i\le i\le n-1\}}$$
+
+选取标准为：
+
+$$Gain(D,a)=\max_{t\in T_a}Gain(D,a,t)=Ent(D)-\min_{t\in T_a}\sum_{\lambda\in\{-,+\}}\frac{|D^\lambda_t|}{|D|}Ent(D^\lambda_t)$$
+
+当前节点如果划分的是连续属性，该属性还可以在后代节点中继续充当划分属性。
+
+## 4.4.2 缺失值处理
+
+出现缺失值时，应当解决两个问题：（1）如何在属性值缺失的情况下进行变量划分的选择（2）如果样本在给定属性值上确实，该如何进行划分。
+
+对问题（1），给定训练集$D$和属性$a$，记$\tilde D$为$D$中在$a$上没有缺失的子集，对属性$a$的$V$个取值，记$\tilde {D^v}$为属性$a$取值为$v$的子集，记$\tilde {D_k}$为取值为$k$的样本子集，假定每个样本$x$有一个权重$w_x$，定义
+
+$$\rho=\frac{\sum_{x\in\tilde D}w_x}{\sum_{x\in D}w_x}$$
+
+$$\tilde{p_k}=\frac{\sum_{x\in\tilde {D_k}}w_x}{\sum_{x\in\tilde D}w_x}$$
+
+$$\tilde{r_v}=\frac{\sum_{x\in\tilde {D^v}}w_x}{\sum_{x\in\tilde D}w_x}$$
+
+直观来看$\rho$代表无缺失值所占权重比例，其余两个变量表示无缺失值样本中某类所占权重比例。
+
+推广信息增益公式得到：
+
+$$Gain(D,a)=\rho\times Gain(\tilde D,a)=\rho\times(Ent(\tilde D)-\sum^V_{v=1}\tilde{r_v}End(\tilde{D^v}))$$
+
+$$Ent(\tilde{D})=-\sum^{|\mathcal Y|}_{k=1}\tilde{p_k}\log_2\tilde{p_k}$$
+
+对问题（2），如果$x$在属性$a$上的取值未知，则将其同时划入所有子节点，并将其权重在对应的子节点中改为$\tilde{r_v}\cdot w_x$。C4.5即使用了如上算法。
+
+# 4.5 多变量决策树
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210405200619.png"width=500 /></div>
+
+如果把每个属性对应到坐标轴上，那么传统单变量决策树（univariate decision tree）划分的路径就是与坐标轴平行的线段。而多变量决策树（multivariate decision tree）可以实现“斜划分”或更复杂的划分方式，它们的非叶子节点是一个形如$\sum^d_{i=1}w_ia_i=t$的线性分类器，例如：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210405201001.png" alt="image-20210405201001866" style="zoom:80%;" /></div>
+
+# 4.6 扩展阅读
+
+信息增益和基尼系数实际上性能几乎一致。
+
+剪枝可以在数据带有噪声时有效提高泛化性能。
+
+多变量决策树算法主要有OC1，先寻找每个属性的最优权重，再对分类边界进行随机扰动以发现更好的边界。同时也有方法引入了最小二乘法、神经网络等结构。
+
+有些决策树算法实现了“增量学习”，在增强新样本时只需调整原有模型而不用从头学习。
