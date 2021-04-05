@@ -6,5 +6,5 @@
   
 - [Machine Learning & Neural Network](ml/)
   - [Chapter 2 模型评估与选择](ml/Chapter2.md)
-  - [Chapter 3 线性模型](ml/chapter3.md)
+  - [Chapter 3 线性模型](ml/Chapter3.md)
   - [Chapter 4 决策树](ml/Chapter4.md)
