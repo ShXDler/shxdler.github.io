@@ -89,9 +89,7 @@ $$Gain(D,a)=\max_{t\in T_a}Gain(D,a,t)=Ent(D)-\min_{t\in T_a}\sum_{\lambda\in\{-
 对问题（1），给定训练集$D$和属性$a$，记$\tilde D$为$D$中在$a$上没有缺失的子集，对属性$a$的$V$个取值，记$\tilde {D^v}$为属性$a$取值为$v$的子集，记$\tilde {D_k}$为取值为$k$的样本子集，假定每个样本$x$有一个权重$w_x$，定义
 
 $$\rho=\frac{\sum_{x\in\tilde D}w_x}{\sum_{x\in D}w_x}$$
-
 $$\tilde{p_k}=\frac{\sum_{x\in\tilde {D_k}}w_x}{\sum_{x\in\tilde D}w_x}$$
-
 $$\tilde{r_v}=\frac{\sum_{x\in\tilde {D^v}}w_x}{\sum_{x\in\tilde D}w_x}$$
 
 直观来看$\rho$代表无缺失值所占权重比例，其余两个变量表示无缺失值样本中某类所占权重比例。
@@ -99,7 +97,6 @@ $$\tilde{r_v}=\frac{\sum_{x\in\tilde {D^v}}w_x}{\sum_{x\in\tilde D}w_x}$$
 推广信息增益公式得到：
 
 $$Gain(D,a)=\rho\times Gain(\tilde D,a)=\rho\times(Ent(\tilde D)-\sum^V_{v=1}\tilde{r_v}End(\tilde{D^v}))$$
-
 $$Ent(\tilde{D})=-\sum^{|\mathcal Y|}_{k=1}\tilde{p_k}\log_2\tilde{p_k}$$
 
 对问题（2），如果$x$在属性$a$上的取值未知，则将其同时划入所有子节点，并将其权重在对应的子节点中改为$\tilde{r_v}\cdot w_x$。C4.5即使用了如上算法。
