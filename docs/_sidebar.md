@@ -10,3 +10,4 @@
     - [Chapter 4 决策树](mlnn/ml/Chapter4.md)
     - [Chapter 5 神经网络](mlnn/ml/Chapter5.md)
     - [Chapter 6 支持向量机](mlnn/ml/Chapter6.md)
+    - [Chapter 7 贝叶斯分类器](mlnn/ml/Chapter7.md)
