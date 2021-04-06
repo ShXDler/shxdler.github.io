@@ -97,3 +97,85 @@ $$y_s(\sum_{i\in S}\alpha_iy_ix_i^\top x_s+b)=1$$
 
 $$b=\frac1{|S|}\sum_{s\in S}(\frac1{y_s}-\sum_{i\in S}\alpha_iy_ix_i^\top x_s)$$
 
+# 6.3 核函数
+
+对于不是线性可分的问题（如异或问题），可以将样本从原始空间映射到更高维的特征空间里：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210406122330.png" alt="image-20210406122330792" style="zoom:80%;" /></div>
+
+记$\phi(x)$为映射后的特征向量，新模型为：
+
+$$f(x)=w^\top\phi(x)+b$$
+
+有目标函数
+
+$$\min_{w,b}\frac12||w||^2$$
+
+$$s.t. y_i(w^\top\phi(x_i)+b)\ge1,i=1,2,...,m$$
+
+有对偶问题
+
+$$\max_\alpha\sum^m_{i=1}\alpha_i-\frac12\sum^m_{i=1}\sum^m_{j=1}\alpha_i\alpha_jy_iy_j\phi(x_i)^\top \phi(x_j)$$
+
+$$s.t. \sum^m_{i=1}\alpha_iy_i=0,\alpha_i\ge0,i=1,2,...,m$$
+
+求解上式需要计算$\phi(x_i)^\top\phi(x_j)$，它的维数甚至可能是无穷维，计算十分困难，可以记核函数（kernel function）
+
+$$\kappa(x_i,x_j)=\langle\phi(x_i),\phi(x_j)\rangle=\phi(x_i)^\top\phi(x_j)$$
+
+求解得到
+
+$$f(x)=w^\top\phi(x)+b=\sum_{i=1}^m\alpha_iy_i\kappa(x,x_i)+b$$
+
+上式可通过训练样本的核函数展开，又称“支持向量展式”（support vector expansion）。
+
+现实任务中我们往往不知道$\phi(\cdot)$是什么形式，关于核函数有如下定理：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210406143015.png" alt="image-20210406143015232" style="zoom:80%;" /></div>
+
+因此只要一个对称函数所对应的核矩阵半正定，它就能作为核函数使用，对于任何一个半正定核矩阵，都能找到一个与之对应的$\phi$，换言之，任何一个核函数都隐式地定义了一个“再生核希尔伯特空间”（Reproducing Kernel Hilbert Space，RKHS）的特征空间。
+
+下表是几种常用的核函数：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210406143348.png" alt="image-20210406143348014" style="zoom:80%;" /></div>
+
+另外，下面几种形式也均为核函数：
+
+$$\gamma_1\kappa_1+\gamma_2\kappa_2,\gamma_1>0,\gamma_2>0$$
+
+$$\kappa_1\otimes\kappa_2(x,z)=\kappa_1(x,z)\kappa_2(x,z)$$
+
+$$\kappa(x,z)=g(x)\kappa_1(x,z)g(z)$$
+
+# 6.4 软间隔与正则化
+
+现实任务中可能很难确认合适的核函数，即使找到了也无法确定是不是有过拟合造成的，因此引入了“软间隔”（soft margin），允许一些样本出错：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210406144427.png" alt="image-20210406144427688" style="zoom:80%;" /></div>
+
+前面的模型要求所有样本都满足约束，成为“硬间隔”（hard margin）。软间隔允许某些样本不满足约束以最大化间隔，当然不满足的样本数也应当尽可能少，得到优化目标
+
+$$\min_{w,b}(\frac12||w||^2+C\sum^m_{i=1}\ell_{0/1}(y_i(w^\top x_i+b)-1))$$
+
+$$where\ C>0,\ell_{0/1}(z)=\left\{\begin{aligned}1\ \ \ ,if\ z<0;\\0,otherwise. \end{aligned}\right.$$
+
+这里的$C$是一个正常数，$\ell_{0/1}(z)$是“0/1损失函数”，当$C$无穷大时，会迫使所有样本满足约束，取有限值则可以允许一些样本不满足约束。然而$\ell_{0/1}(z)$非凸、非连续，常用其他函数代替（替代损失，surrogate loss），它们通常是凸的连续函数并且是$\ell_{0/1}$的上界：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210406151720.png" alt="image-20210406151720567" style="zoom:80%;" /></div>
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210406151733.png" alt="image-20210406151733644" style="zoom:80%;" /></div>
+
+如果使用hinge损失，优化目标变成
+
+$$\min_{w,b}(\frac12||w||^2+C\sum^m_{i=1}\max(0,1-y_i(w^\top x_i+b)))$$
+
+引入“松弛变量”（slack variables）$\xi_i\ge0$，得
+
+$$\min_{w,b,\xi_i}\frac12||w||^2+C\sum^m_{i=1}\xi_i$$
+
+$$s.t. \xi_i\ge1-y_i(w^\top x_i+b)，\xi_i\ge0,i=1,2,...,m$$
+
+这就是常用的“软间隔支持向量机”。每个样本都对应一个松弛变量。上述问题仍是一个二次规划问题，有拉格朗日函数
+
+$$L(w,b,\alpha,\xi,\mu)=\frac12||w||^2+C\sum^m_{i=1}\xi_i+\sum^m_{i=1}\alpha_i(1-\xi_i-y_i(w^\top x_i+b))-\sum^m_{i=1}\mu_i\xi_i$$
+
