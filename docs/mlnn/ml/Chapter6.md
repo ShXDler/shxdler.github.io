@@ -141,11 +141,7 @@ $$f(x)=w^\top\phi(x)+b=\sum_{i=1}^m\alpha_iy_i\kappa(x,x_i)+b$$
 
 另外，下面几种形式也均为核函数：
 
-$$\gamma_1\kappa_1+\gamma_2\kappa_2,\gamma_1>0,\gamma_2>0$$
-
-$$\kappa_1\otimes\kappa_2(x,z)=\kappa_1(x,z)\kappa_2(x,z)$$
-
-$$\kappa(x,z)=g(x)\kappa_1(x,z)g(z)$$
+$$\gamma_1\kappa_1+\gamma_2\kappa_2,\gamma_1>0,\gamma_2>0\\\kappa_1\otimes\kappa_2(x,z)=\kappa_1(x,z)\kappa_2(x,z)\\\kappa(x,z)=g(x)\kappa_1(x,z)g(z)$$
 
 # 6.4 软间隔与正则化
 
@@ -155,9 +151,7 @@ $$\kappa(x,z)=g(x)\kappa_1(x,z)g(z)$$
 
 前面的模型要求所有样本都满足约束，成为“硬间隔”（hard margin）。软间隔允许某些样本不满足约束以最大化间隔，当然不满足的样本数也应当尽可能少，得到优化目标
 
-$$\min_{w,b}(\frac12||w||^2+C\sum^m_{i=1}\ell_{0/1}(y_i(w^\top x_i+b)-1))$$
-
-$$where\ C>0,\ell_{0/1}(z)=\left\{\begin{aligned}1\ \ \ ,if\ z<0;\\0,otherwise. \end{aligned}\right.$$
+$$\min_{w,b}(\frac12||w||^2+C\sum^m_{i=1}\ell_{0/1}(y_i(w^\top x_i+b)-1))\\where\ C>0,\ell_{0/1}(z)=\left\{\begin{aligned}1\ \ \ ,if\ z<0;\\0,otherwise. \end{aligned}\right.$$
 
 这里的$C$是一个正常数，$\ell_{0/1}(z)$是“0/1损失函数”，当$C$无穷大时，会迫使所有样本满足约束，取有限值则可以允许一些样本不满足约束。然而$\ell_{0/1}(z)$非凸、非连续，常用其他函数代替（替代损失，surrogate loss），它们通常是凸的连续函数并且是$\ell_{0/1}$的上界：
 
@@ -171,11 +165,24 @@ $$\min_{w,b}(\frac12||w||^2+C\sum^m_{i=1}\max(0,1-y_i(w^\top x_i+b)))$$
 
 引入“松弛变量”（slack variables）$\xi_i\ge0$，得
 
-$$\min_{w,b,\xi_i}\frac12||w||^2+C\sum^m_{i=1}\xi_i$$
-
-$$s.t. \xi_i\ge1-y_i(w^\top x_i+b)，\xi_i\ge0,i=1,2,...,m$$
+$$\min_{w,b,\xi_i}\frac12||w||^2+C\sum^m_{i=1}\xi_is\\s.t. \xi_i\ge1-y_i(w^\top x_i+b)，\xi_i\ge0,i=1,2,...,m$$
 
 这就是常用的“软间隔支持向量机”。每个样本都对应一个松弛变量。上述问题仍是一个二次规划问题，有拉格朗日函数
 
 $$L(w,b,\alpha,\xi,\mu)=\frac12||w||^2+C\sum^m_{i=1}\xi_i+\sum^m_{i=1}\alpha_i(1-\xi_i-y_i(w^\top x_i+b))-\sum^m_{i=1}\mu_i\xi_i$$
 
+求导
+
+$$w=\sum^m_{i=1}\alpha_iy_ix_i\\
+0=\sum^m_{i=1}\alpha_iy_i\\
+C=\alpha_i+\mu_i$$
+
+代入得到对偶问题
+
+$$\max_\alpha\sum^m_{i=1}\alpha_i-\frac12\sum^m_{i=1}\sum^m_{j=1}\alpha_i\alpha_jy_iy_jx_i^\top x_j\\s.t. \sum^m_{i=1}\alpha_iy_i=0,0\le\alpha_i\le C,i=1,2,...,m$$
+
+而KKT条件要求：
+
+$$\left\{\begin{aligned}\alpha_i\ge0,\mu_i\ge0\\y_if(x_i)-1+\xi_i\ge0\\\alpha_i(y_if(x_i)-1+\xi_i)=0\\\xi_i\ge0,\mu_i\xi_i=0\end{aligned}\right.$$
+
+所以对于任何样本都有$\alpha_i=0$或$$

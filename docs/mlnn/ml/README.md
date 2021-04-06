@@ -1,6 +1,4 @@
-周志华《机器学习》笔记
-
-一些comments
+本章为周志华《机器学习》笔记，下面是一些comments
 
 [Chapter 2](ml/Chapter2.md)
 
