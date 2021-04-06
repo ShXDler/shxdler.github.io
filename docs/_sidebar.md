@@ -9,3 +9,4 @@
     - [Chapter 3 线性模型](mlnn/ml/Chapter3.md)
     - [Chapter 4 决策树](mlnn/ml/Chapter4.md)
     - [Chapter 5 神经网络](mlnn/ml/Chapter5.md)
+    - [Chapter 6 支持向量机](mlnn/ml/Chapter6.md)
