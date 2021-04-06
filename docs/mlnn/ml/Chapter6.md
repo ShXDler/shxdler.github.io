@@ -285,3 +285,45 @@ $$h(x)=w^\top\phi(x)$$
 而KLDA的目标函数为
 
 $$\max_wJ(w)=\frac{w^\top S_b^\phi w}{w^\top S_w^\phi w}$$
+
+而第$i$类样本的均值为
+
+$$\mu_i^\phi=\frac1{m_i}\sum_{x\in X_i}\phi(x)$$
+
+得到散度矩阵
+
+$$S_b^\phi=(\mu_1^\phi-\mu_0^\phi)(\mu_1^\phi-\mu_0^\phi)^\top\\
+S_w^\phi=\sum^1_{i=0}\sum_{x\in X_i}(\phi(x)-\mu_i^\phi)(\phi(x)-\mu_i^\phi)^\top$$
+
+由表示定理，得
+
+$$h(x)=\sum^m_{i=1}\alpha_i\kappa(x,x_i)$$
+
+进而
+
+$$w=\sum^m_{i=1}\alpha_i\phi(x_i)$$
+
+记$\bf K$为核函数$\kappa$对应的核矩阵，$({\bf K})_{ij}=\kappa(x_i,x_j)$，记${\mathbb I}_i\in\{1,0\}^{m\times1}$为第$i$类样本的示性向量，如果$x_j\in X_i$，则第$j$个分量为1，否则为0，令
+
+$$\hat\mu_0=\frac1{m_0}{\bf K1}_0\\
+\hat\mu_1=\frac1{m_1}{\bf K1}_1\\
+{\bf M}=(\hat\mu_0-\hat\mu_1)(\hat\mu_0-\hat\mu_1)^\top\\
+{\bf N}={\bf KK^\top}-\sum^1_{i=0}m_i\hat\mu_i\hat\mu_i^\top$$
+
+则目标函数可以转化成
+
+$$\max_\alpha J(\alpha)=\frac{\bf\alpha^\top M\alpha}{\bf\alpha^\top N\alpha}$$
+
+使用拉格朗日乘子法即可求解。
+
+# 6.7 拓展阅读
+
+线性核SVM仍是文本分类的首选技术，因为属性空间维度较高，冗余度很大。
+
+SVM的求解通常借助于凸优化技术，对线性核SVM，有基于割平面法的$\rm SVM^{perf}$具有线性时间复杂度，基于随机梯度下降的Pegasos甚至更快，坐标下降法在稀疏数据上有很高的效率。非线性核SVM时间复杂度理论上不可能低于$O(m^2)$，一些快速近似方法有如基于采样的CVM、基于低秩逼近的Nystrom、基于随机傅里叶特征的方法等等。
+
+支持向量机作为二分类方法，如果想要多分类或者结构输出需要进行扩展。
+
+核函数的选择问题仍然没有得到解决，多核学习（multiple kernel learning）可以使用多个核函数进行最优凸组合得到最终函数，这实际上也是集成学习的机制。
+
+替代损失函数存在“一致性”（consistency）问题，即这种方法得到的是否还是原本的解？有研究证明了几种常见替代损失函数的一致性，给出了基于替代损失函数进行经验风险最小化的一致性充要条件。
