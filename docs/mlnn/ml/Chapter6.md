@@ -207,3 +207,81 @@ $$\min_f(\Omega(f)+C\sum^m_{i=1}\ell(f(x_i),y_i))$$
 
 # 6.5 支持向量回归
 
+和传统回归模型追求$f(x)$和$y$相等不同，支持向量回归（Support Vector Regression，SVR）能容忍二者存在$\epsilon$的偏差，只有大于这个值时才计算损失：
+
+<div align="center"’><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210406194641.png" alt="image-20210406194641437" style="zoom:80%;" /></div>
+
+SVR问题可转化为：
+
+$$\min_{w,b}\frac12||w||^2+C\sum^m_{i=1}\ell_\epsilon(f(x_i)-y_i)$$
+
+其中$\ell_\epsilon$是“$\epsilon$-不敏感损失”（$\epsilon$-insensitive loss）函数：
+
+$$\ell_\epsilon(z)=\left\{\begin{aligned}&0,&if\ |z|\le\epsilon\\
+&|z|-\epsilon,&otherwise\end{aligned}\right.$$
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210406195538.png" alt="image-20210406195538324" style="zoom:80%;" /></div>
+
+引入松弛变量$\xi_i$和$\hat\xi_i$，得
+
+$$\min_{w,b,\xi_i,\hat\xi_i}\frac12||w||^2+C\sum^m_{i=1}(\xi_i+\hat\xi_i)\\
+s.t.\begin{aligned}&f(x_i)-y_i\le\epsilon+\xi_i\\
+&y_i-f(x_i)\le\epsilon+\hat\xi_i\\
+&\xi_i\ge0,\hat\xi_i\ge0,i=1,2,...,m\end{aligned}$$
+
+继续使用拉格朗日乘子法可以得到
+
+$$\begin{aligned}L(w,b,\alpha,\hat\alpha,\xi,\hat\xi,\mu,\hat\mu)&=\frac12||w||^2+C\sum^m_{i=1}(\xi_i+\hat\xi_i)-\sum^m_{i=1}\mu_i\xi_i-\sum^m_{i=1}\hat\mu_i\hat\xi_i\\&+\sum_{i=1}^m\alpha_i(f(x_i)-y_i-\epsilon-\xi_i)+\sum^m_{i=1}\hat\alpha_i(y_i-f(x_i)-\epsilon-\hat\xi_i)\end{aligned}$$
+
+求导得
+
+$$w=\sum^m_{i=1}(\hat\alpha_i-\alpha_i)x_i,\\
+0=\sum^m_{i=1}(\hat\alpha_i-\alpha_i),\\
+C=\alpha_i+\mu_i,\\
+C=\hat\alpha_i+\hat\mu_i$$
+
+代入SVR得到对偶问题：
+
+$$\max_{\alpha,\hat\alpha}(\sum^m_{i=1}y_i(\hat\alpha_i-\alpha_i)-\epsilon(\hat\alpha_i+\alpha_i)-\frac12\sum^m_{i=1}\sum^m_{j=1}(\hat\alpha_i-\alpha_j)x_i^\top x_j)\\
+s.t.\sum^m_{i=1}(\hat\alpha_i-\alpha_i)=0,0\le\alpha_i,\hat\alpha_i\le C$$
+
+KKT条件要求
+
+$$\left\{\begin{aligned}\alpha_i(f(x_i)-y_i-\epsilon-\xi_i)=0,\\
+\hat\alpha_i(y_i-f(x_i)-\epsilon-\hat\xi_i)=0,\\
+\alpha_i\hat\alpha_i=0,\xi_i\hat\xi_i=0,\\
+(C-\alpha_i)\xi_i=0,(C-\hat\alpha_i)\hat\xi_i=0\end{aligned}\right.$$
+
+与前两种情况类似，当且仅当$f(x_i)-y_i-\epsilon-\xi_i=0$时，有$\alpha_i>0$；当且仅当$f(x_i)-y_i-\epsilon-\hat\xi_i=0$时，有$\hat\alpha_i>0$；也就是说只有样本$(x_i,y_i)$不落入间隔带中，$\alpha_i$和$\hat\alpha_i$才能取非零值。另外$\alpha_i$和$\hat\alpha_i$至少有一个为0，所以这两个约束不能同时成立。
+
+对每个样本都有
+
+$$b_i=y_i+\epsilon-\sum^m_{j=1}(\hat\alpha_j-\alpha_j)x_j^\top x_i$$
+
+实践中常选取多个（或所有）满足$0<\alpha_i<C$的样本求解并取平均值。
+
+得到SVR解为
+
+$$f(x)=\sum^m_{i=1}(\hat\alpha_i-\alpha_i)x_i^\top x+b$$
+
+使得$(\hat\alpha_i-\alpha_i)\ne0$的向量即为SVR的支持向量，他们一定落在$\epsilon$-间隔带之外，所以SVR算法具有一定的稀疏性。（不过大部分向量是不是都是支持向量？）
+
+如果考虑特征映射形式，得到的SVR形式为
+
+$$f(x)=\sum^m_{i=1}(\hat\alpha_i-\alpha_i)\kappa(x,x_i)+b$$
+
+# 6.6 核方法
+
+我们发现无论SVM还是SVR，模型都能表示成$\kappa(x,x_i)$的线性组合，我们有如下“表示定理”（representer theorem）结论：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210406212727.png" alt="image-20210406212727694" style="zoom:80%;" /></div>
+
+这表明，对一般的损失函数和单调递增的正则化项，最优解都可以表示成核函数的线性组合。基于这一定理，人们发展了基于核函数的方法——“核方法”（kernel methods），将线性学习器拓展为非线性学习器，如“核线性判别分析”（Kernelized Linear Discriminant Analysis，KLDA）。
+
+我们先假设使用映射$\phi:{\mathcal X}\mapsto{\mathbb F}$，在$\mathbb F$中执行线性判别分析，有
+
+$$h(x)=w^\top\phi(x)$$
+
+而KLDA的目标函数为
+
+$$\max_wJ(w)=\frac{w^\top S_b^\phi w}{w^\top S_w^\phi w}$$
