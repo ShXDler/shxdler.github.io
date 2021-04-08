@@ -88,6 +88,40 @@ $$P(c|x)\propto P(c)\prod^p_{i=1}P(x_i|c,pa_i)$$
 
 其中$pa_i$为$x$所依赖的属性，称$x_i$的父属性。如果确定了$x$所依赖的父属性$pa_i$，就可以直接估计概率值$P(x_i|c,pa_i)$，问题的关键就转化为如何确定每个属性的父属性。
 
-**SPODE**
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210408210943.png" alt="image-20210408210936491" style="zoom:80%;" /></div>
 
-最直接的方法是假设所有
+**SPODE**（Super-Parent ODE）
+
+最直接的方法是假设所有属性都依赖于同一个“超父”（super-parent）属性，然后通过交叉验证等模型选择的方法确定超父属性。
+
+**TAN**（Tree Augmented naive Bayes）
+
+TAN算法则是在最大加权生成树（maximum weighted spanning tree）算法的基础上，通过以下步骤将属性间的依赖关系简化为树形结构：
+
+（1）计算任意两个属性之间的条件互信息（conditional mutual information）
+$$I(x_i,x_j|y)=\sum_{x_i,x_j;c\in\mathcal Y}P(x_i,x_j|c)\log\frac{P(x_i,x_j|c)}{P(x_i|c)P(x_j|c)}$$
+（2）以属性为节点构建完全图，任意两个节点之间边的权重设为$I(x_i,x_j|y)$；
+（3）构建此完全图的最大加权生成树，挑选根变量，将边置为有向
+（4）加入类别节点$y$，增加从$y$到每个属性的有向边
+
+其中，条件互信息$I(x_i,x_j|y)$刻画了两个属性在已知类别下的相关性，因此通过最大生成树方法，TAN保留了强相关属性之间的依赖性
+
+**AODE**（Averaged One-Dependent Estimator）
+
+AODE是一种基于集成学习机制的独依赖分类器，和SPODE通过模型选择选父属性不同，AODE尝试将每个属性作为超父属性来构建SPODE，然后将那些具有足够训练数据支撑的SPODE集成作为最终结果，即
+
+$$P(c|x)\propto\sum^d_{i=1,|D_{x_i}|\ge m'}P(c,x_i)\prod^d_{j=1}P(x_j|c,x_i)$$
+
+其中$D_{x_i}$表示第$i$个属性上取值为$x_i$的样本的集合，$m'$为阈值常数（默认为30）。显然AODE需要估计$P(c,x_i)$和$P(x_j|c,x_i)$
+
+$$\hat P(c,x_i)=\frac{|D_{c,x_i}+1}{|D|+N\times N_i}\\
+\hat P(x_j|c,x_i)=\frac{|D_{c,x_i,x_j}|+1}{|D_{c,x_i}|+N_j}$$
+
+与NB和SPODE相比，AODE无需模型选择，可以通过预计算节省预测时间，也能采取懒惰学习的方式在预测时在进行计数，易于实现增量学习。
+
+考虑变量的高阶依赖，准确估计概率所需的训练样本数量将以指数级增加，如果训练数据非常充分，泛化性能有可能提升，但在样本有限的条件下效果仍然不好。
+
+# 7.5 贝叶斯网
+
+贝叶斯网（Bayesian network）又称“信念网”（belief network），它借助有向无环图（Directed Acyclic Graph，DAG）来刻画属性之间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述属性的联合概率分布。
+
