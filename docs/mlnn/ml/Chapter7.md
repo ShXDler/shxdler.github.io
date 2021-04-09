@@ -193,3 +193,23 @@ $$P(\mathbf Q=\mathbf q|\mathbf E=\mathbf e)\simeq\frac{n_q}T$$
 
 # 7.6 EM算法
 
+现实生活中往往会存在不完整的训练样本变量，又称“隐变量”（latent variable），令$\mathbf X$表示已观测变量集，$\mathbf Z$表示隐变量集，$\Theta$表示模型参数。如果要对$\Theta$进行极大似然估计，则应最大化
+
+$$LL(\Theta|\mathbf X,\mathbf Z)=\log P(\mathbf X,\mathbf Z|\Theta)$$
+
+然而$\mathbf Z$是隐变量所以无法直接求解，但我们可以通过求$\mathbf Z$的期望，来最大化已经观测到的数据的对数“边际似然”（marginal likelihood）
+
+$$LL(\Theta|\mathbf X)=\log P(\mathbf X|\Theta)=\log\sum_{\mathbf Z}P(\mathbf X,\mathbf Z|\Theta)$$
+
+EM（Expectation-Maximization）算法常用于估计参数隐变量，基本思想是：如果$\Theta$已知，则可以推断出最优隐变量$\mathbf Z$的值；反之，如果$\mathbf Z$已知，则可以对参数$\Theta$进行极大似然估计。所以可以以初始值$\Theta^0$为起点，迭代执行以下步骤：
+（1）基于$\Theta^t$推断隐变量$\mathbf Z$的期望，记为$\mathbf Z^t$
+（2）基于已观测变量$\mathbf X$和$\mathbf Z^t$对参数$\Theta$做极大似然估计，记为$\Theta^{t+1}$
+
+进一步地，如果我们不是取$\mathbf Z$的期望，而是计算其概率分布$P(\mathbf Z|\mathbf X,\Theta^t)$，则有：
+
+（1）E步（Expectation）：以当前参数$\Theta^t$推断隐变量分布$P(\mathbf Z|\mathbf X,\Theta^t)$，并计算对数似然函数$LL(\Theta|\mathbf X,\mathbf Z)$关于$\mathbf Z$的期望
+$$Q(\Theta|\Theta^t)=\mathbb E_{\mathbf Z|\mathbf X,\Theta^t}LL(\Theta|\mathbf X,\mathbf Z)$$
+（2）M步（Maximization）：寻找参数最大化期望似然
+$$\Theta^t=\arg\max_{\Theta}Q(\Theta|\Theta^t)$$
+
+简单来说，EM算法第一步是期望步，利用当前估计的参数值来计算对数似然的期望值；第二步是最大化步，寻找能使E步产生的似然期望最大化的参数值，并进行循环迭代。而隐变量估计也可以使用梯度下降等方法进行求解，但求和项数会随着隐变量的数目以指数级上升，EM算法则可以看做一种非梯度优化方法（实际上可看作坐标下降法最大化对数似然下界）。
