@@ -125,3 +125,35 @@ $$\hat P(c,x_i)=\frac{|D_{c,x_i}+1}{|D|+N\times N_i}\\
 
 贝叶斯网（Bayesian network）又称“信念网”（belief network），它借助有向无环图（Directed Acyclic Graph，DAG）来刻画属性之间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述属性的联合概率分布。
 
+具体来说，一个贝叶斯网$B$由结构$G$和参数$\Theta$两部分组成，$G$是一个有向无环图，每个节点对应一个属性，如果它们之间有依赖关系，就用一条边连接起来；$\Theta$定量地描述了依赖关系。假设$x_i$在$G$中的父节点集为$\pi_i$，则$\Theta$包含了每个属性的条件概率表示$\theta_{x_i|\pi_i}=P_B(x_i|\pi_i)$，如图所示
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210409165640.png" alt="image-20210409165633631" style="zoom:80%;" /></div>
+
+## 7.5.1 结构
+
+贝叶斯网结构表达了属性间的条件独立性，它假设每个属性和非后裔属性独立，有联合概率分布
+
+$$P_B(x_1,x_2,...,x_d)=\prod^d_{i=1}P_B(x_i|\pi_i)=\prod^d_{i=1}\theta_{x_i|\pi_i}$$
+
+例如上图，有
+
+$$P(x_1,x_2,x_3,x_4,x_5)=P(x_1)P(x_2)P(x_3|x_1)P(x_4|x_1,x_2)P(x_5|x_2)$$
+
+下图展现了贝叶斯网中常见的三种结构关系：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210409171938.png" alt="image-20210409171938039" style="zoom:80%;" /></div>
+
+“同父”（common parent）结构中$x_3$和$x_4$在给定$x_1$时独立，记为$x_3\perp x_4|x_1$。“顺序”结构中，给定$x$的值，有$y$和$z$条件独立。而V型结构（V-structure）又称“冲撞”结构，给定$x_4$后，$x_1$和$x_2$必不独立，但$x_4$未知时二者则相互独立，这种独立性称为“边际独立性”（marginal independent）。由此可见，三种结构中，一个变量取值是否确定会影响另外两个变量间的独立性。
+
+为了分析有向图中变量的条件独立性，可使用“有向分离”（directed-seperation），我们先把有向图中所有的V型结构的两个父节点之间加上一条无向边，再将所有有向边改为无向边，使得有向图转变为一个无向图。这样产生的无向图叫“道德图”（moral graph），父节点相连的过程称为“道德化”（moralization）。（道德图将同父结构和顺序结构转化成一种形式，从条件独立的性质上看二者是等价的。）
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210409173802.png" alt="image-20210409173802615" width=500 /></div>
+
+假定道德图中有变量$x$和$y$以及集合$\mathbf z$，如果$x$和$y$能被$\mathbf z$分开，则称$x$和$y$被$\mathbf z$有向分离，$x\perp y|\mathbf z$成立。
+
+## 7.5.2 学习
+
+如果知道了网络结构，只需要进行计数估算条件概率表即可，因此贝叶斯网学习的首要任务是找出结构最恰当的贝叶斯网，常用“评分搜索”的方法。我们首先定义一个能够衡量贝叶斯网和训练数据契合程度的评分函数（score function）。
+
+常用评分函数一般基于信息论准则，这类准则将学习问题看作一个数据压缩任务，学习目标是找到一个能以最短编码长度描述训练数据的模型，编码长度包括描述模型的编码位数和使用模型描述数据所需的编码位数。每个贝叶斯网描述了一个在训练数据上的概率分布，我们应选择综合编码长度最短的贝叶斯网，也就是“最小描述长度”（Minimal Description Length，MDL）准则。
+
