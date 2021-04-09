@@ -159,4 +159,37 @@ $$P(x_1,x_2,x_3,x_4,x_5)=P(x_1)P(x_2)P(x_3|x_1)P(x_4|x_1,x_2)P(x_5|x_2)$$
 
 给定训练集$D$，贝叶斯网$B=\lang G,\Theta\rang$在$D$上的评分函数可写为
 
-$$s(B|D)$$
+$$s(B|D)=f(\theta)|B|-LL(B|D)$$
+
+其中$|B|$是贝叶斯网络的参数个数，$f(\theta)$表示参数$\theta$所需的编码位数，同时有$LL(B|D)=\sum^m_{i=1}\log P_B(x_i)$，显然它是贝叶斯网的对数似然。评分函数的第一项是计算编码贝叶斯网所需的编码位数，第二项计算了概率分布$P_B$对$D$描述的效果。
+
+如果$f(\theta)=1$，即每个参数用1编码位，则会得到AIC（Akaike Information Criterion）评分函数：
+
+$$AIC(B|D)=|B|-LL(B|D)$$
+
+如果$f(\theta)=\frac12\log m$，则会得到BIC（Bayesian Information Criterion）评分函数：
+
+$$BIC(B|D)=\frac{\log m}2|B|-LL(B|D)$$
+
+如果$f(\theta)=0$，则评分函数退化为负对数似然函数，学习任务退化为极大似然估计。
+
+由此可见，在网络结构固定时，评分函数第一项为常数，最小化$s(B|D)$等价于计算参数$\Theta$的极大似然估计，可以直接在训练数据上估计获得。然而，从所有可能的网络结构中搜索最优贝叶斯网结构是一个NP难问题，有两种常用策略可以求得近似解：（1）贪心法，从某个网络结构出发，每次调整一条边，直到评分函数值不再下降位置；（2）通过给网络结构增加约束（如树形结构）来削减搜索空间。
+
+## 7.5.3 推断
+
+贝叶斯网训练好之后就能回答“查询”（query）问题，通过已知变量观测值推测查询变量的过程叫做“推断”（inference），已知变量观测值称为“证据”（evidence）。直接通过贝叶斯网的条件概率分布计算后验概率是NP难的，此时需采用“近似推断”的方法，常用吉布斯抽样（Gibbs sampling）。
+
+记$\mathbf Q=\{Q_1,...,Q_n\}$表示待查询变量，而$\mathbf E=\{E_1,...,E_k\}$为证据变量，其取值为$\mathbf e=\{e_1,...,e_k\}$，目标是计算后验概率$P(\mathbf Q=\mathbf q|\mathbf E=\mathbf e)$，算法如下：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210409224022.png" alt="image-20210409224021439" width=500 /></div>
+
+吉布斯抽样算法在贝叶斯网状态空间中进行“随机漫步”（random walk），首先随机产生一个$\mathbf E=\mathbf e$的$q^0$样本作为初始，然后每一步依次遍历$\mathbf Q$中的变量，固定当前$\mathbf{q}^{t-1}_i$并根据其他变量当前取值计算概率抽样得到新的$\mathbf q^t_i$，假设$T$次采样得到的与$\mathbf q$一致的有$n_q$个，则可以近似估算出后验概率
+
+$$P(\mathbf Q=\mathbf q|\mathbf E=\mathbf e)\simeq\frac{n_q}T$$
+
+上述步骤形成的$\mathbf q^t$实际上是一个马尔科夫链（Markov chain），不可约非周期的马氏链在$t\rightarrow\infty$时收敛与平稳分布（stationary distribution），即$P(\mathbf Q=\mathbf q|\mathbf E=\mathbf e)$。
+
+值得一提的是，马氏链往往需要很长时间才能趋于收敛，因此吉布斯抽样的算法收敛时间较慢，同时，如果贝叶斯网中存在极端概率0或1（可能不满足不可约非周期条件），则马氏链可能不存在平稳分布。
+
+# 7.6 EM算法
+
