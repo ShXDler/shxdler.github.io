@@ -213,3 +213,5 @@ $$Q(\Theta|\Theta^t)=\mathbb E_{\mathbf Z|\mathbf X,\Theta^t}LL(\Theta|\mathbf X
 $$\Theta^t=\arg\max_{\Theta}Q(\Theta|\Theta^t)$$
 
 简单来说，EM算法第一步是期望步，利用当前估计的参数值来计算对数似然的期望值；第二步是最大化步，寻找能使E步产生的似然期望最大化的参数值，并进行循环迭代。而隐变量估计也可以使用梯度下降等方法进行求解，但求和项数会随着隐变量的数目以指数级上升，EM算法则可以看做一种非梯度优化方法（实际上可看作坐标下降法最大化对数似然下界）。
+
+算法收敛的证明用到了Jensen不等式，详见https://zhuanlan.zhihu.com/p/40991784。
