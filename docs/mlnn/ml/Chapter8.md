@@ -24,4 +24,10 @@ $$P(F(x)\ne f(x))=\sum_{k=0}^{\lfloor T/2\rfloor}\binom Tk(1-\epsilon)^k\epsilon
 
 # 8.2 Boosting
 
-Boosting的工作机制为
+Boosting的工作机制为：先从训练集训练出一个基学习器，再根据基学习器的表现对训练样本分布进行调整，更多地关注先前基学习器做错的样本，再根据新的样本分布训练下一个基学习器，直至基学习器数目达到指定的$T$，再将这$T$个基学习器进行加权结合。而Boosting算法最著名的代表是AdaBoost，它有多种推导方式，下面一种基于“可加模型”（additive model），即基学习器的线性组合
+
+$$H(x)=\sum^T_{i=1}\alpha_th_t(x)$$
+
+来最小化指数损失函数（exponential loss function）
+
+$$\ell_{\exp}(H|\mathcal D)=\mathbb E_{x\sim\mathcal D}[e^{-f(x)H(x)}]$$
