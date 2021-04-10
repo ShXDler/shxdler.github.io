@@ -1,0 +1,27 @@
+# 8 集成学习
+
+# 8.1 个体与集成
+
+集成学习（ensemble learning）也被称为多分类器系统（multi-classifier system）、基于委员会的学习（committee-based learning）。集成学习先产生一组“个体学习器”（individual learner），再用某种策略将它们结合起来。如果只包含同种类型的个体学习器，这样的集成是“同质”（homogeneous）的，个体学习器称“基学习器”（base learner），学习算法称“基学习算法”（base learning algorithm）。如果包含不同类型的学习器则称“异质”（heterogenous）的，这时个体学习器称“组件学习器”（component learner）或个体学习器。
+
+集成学习往往是针对“弱学习器”（weak learner）而言的，同时，假设通过投票法（voting）产生结果，那么个体学习器应当有一定的“准确性”和“多样性”。
+
+考虑二分类问题$y\in\{-1,+1\}$和真实函数$f$，假设基分类器的错误率为$\epsilon$，则对每个基分类器$h_i$有
+
+$$P(h_i(x)\ne f(x))=\epsilon$$
+
+如果集成学习通过简单投票的方法结合$T$个基分类器，如果有超过半数的基分类器正确，则集成分类就会正确：
+
+$$F(x)=sgn(\sum^T_{i=1}h_i(x))$$
+
+如果基分类器的错误率相互独立，由Hoeffding不等式
+
+$$P(F(x)\ne f(x))=\sum_{k=0}^{\lfloor T/2\rfloor}\binom Tk(1-\epsilon)^k\epsilon^{T-k}\le\exp(-\frac12T(1-2\epsilon)^2)$$
+
+由此可见，当$T$变大时，集成的错误率也会以指数级下降趋向于0。
+
+然而，上述证明要求各错误率相互独立，实际上现实任务中这无法成立。而个体学习器的准确性和多样性本身就存在冲突，如何产生好而不同的个体学习器是集成学习研究的核心。而根据个体学习器的生成方式，集成学习方法可以分成两类：如果个体学习间存在强依赖关系则必须串行生成的序列化方法，如Boosting；个体学习器之间不存在强依赖关系可同时生成的并行化方法，如Bagging和“随机森林”（Random Forest）。
+
+# 8.2 Boosting
+
+Boosting的工作机制为
