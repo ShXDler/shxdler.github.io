@@ -115,5 +115,4 @@ Boosting算法要求基学习器能指定分布进行学习，可以通过“重
 
 <div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210411173242.png" alt="image-20210411173242734" style="zoom:80%;" /></div>
 
-
-
+# 8.3 Bagging与随机森林
