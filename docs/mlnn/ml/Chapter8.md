@@ -31,3 +31,21 @@ $$H(x)=\sum^T_{i=1}\alpha_th_t(x)$$
 来最小化指数损失函数（exponential loss function）
 
 $$\ell_{\exp}(H|\mathcal D)=\mathbb E_{x\sim\mathcal D}[e^{-f(x)H(x)}]$$
+
+对$H(X)$求导有
+
+$$\frac{\partial\ell_{\exp}(H|\mathcal D)}{\partial H(x)}=-e^{-H(x)}P(f(x)=1|x)+e^{H(x)}P(f(x=-1)|x)$$
+
+令上式等于零，则
+
+$$H(x)=\frac12\log\frac{P(f(x)=1|x)}{P(f(x)=-1|x)}$$
+
+$$\begin{aligned}sgn(H(x))&=sgn(\frac12\log\frac{P(f(x)=1|x)}{P(f(x)=-1|x)})\\
+&=\left\{\begin{aligned}&1,&P(f(x)=1|x)>P(f(x)=-1|x)\\
+&-1,&P(f(x)=1|x)<P(f(x)=-1|x)\end{aligned}\right.\\
+&=\arg\max_{y\in\{-1,+1\}}P(f(x)=y|x)\end{aligned}$$
+
+这意味着$sgn(H(x))$达到了贝叶斯最优错误率，因此指数损失函数是分类任务中原来0/1损失函数的一致（consistent）替代损失函数，同时也具有连续可微等性质。
+
+在AdaBoost算法中，第一个基分类器$h_1$是通过直接将基学习算法用于初始数据分布得到，之后迭代生成$h_t$和$\alpha_t$，当基分类器$h_t$基于分布$\mathcal D_t$产生后，该基分类器的权重$\alpha_t$应使得$\alpha_th_t$最小化指数损失函数
+
