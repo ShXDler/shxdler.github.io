@@ -116,3 +116,17 @@ Boosting算法要求基学习器能指定分布进行学习，可以通过“重
 <div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210411173242.png" alt="image-20210411173242734" style="zoom:80%;" /></div>
 
 # 8.3 Bagging与随机森林
+
+前面提到，集成学习要求基学习器有较大差异，那么我们可以对训练样本进行采样，但如果每个子训练集都完全不同，那每个基学习器都只用了一小部分数据，难以确保生成好的学习器，所以我们可以考虑使用有交叠的采样子集。
+
+## 8.3.1 Bagging
+
+Bagging（Bootstrap AGGregatING）是并行式集成学习的著名代表，它使用Bootstrap算法，得到的采样集包含了初始训练集大概63.2%的样本。
+
+由此，我们可以得到$T$个含$m$个训练样本的采样集，基于每个采样集训练出一个基学习器再进行组合，这就是Bagging的基本流程。在组合的过程中，分类任务可以使用简单投票法，回归任务可以用简单平均法，如果两个类收到同样票数可以随机选一个，也可以进一步考察投票的置信度，算法如下所示：
+
+<div align="center"><img src="https://picgo-1305404921.cos.ap-shanghai.myqcloud.com/20210411180107.png" alt="image-20210411180107762" width=500 /></div>
+
+不难发现Bagging方法和一个学习器的复杂度同阶，比较高效，同时它与标准AdaBoost不同，可以直接用于多分类、回归等任务。
+
+另外，Bootstrap采样后剩下的36.8%的样本可以作为验证集来对泛化性能进行“包外估计”（out-of-bag estimate），
