@@ -45,6 +45,22 @@
   }
 }
   </script>
+  
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk/dist/gitalk.css">
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js"></script>
+  <script>
+    const gitalk = new Gitalk({
+      clientID: 'b6df6107325dd5db08f3',
+      clientSecret: 'b0812342781f647c64a233dc2126cf76ceea93b9',
+      repo: 'gitalkcoms',
+      owner: 'ShXDler',
+      admin: ['ShxDler'],
+      // facebook-like distraction free mode
+      distractionFreeMode: false
+    })
+  </script>
+
   <script src="//cdn.jsdelivr.net/npm/docsify-katex@latest/dist/docsify-katex.js"></script>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css"> 
   <script src="//unpkg.com/docsify-scroll-to-top/dist/docsify-scroll-to-top.min.js"></script>
