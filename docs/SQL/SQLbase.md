@@ -1,4 +1,6 @@
-# 1 SQL语句
+# 1 数据库和SQL
+
+## 1.3 SQL概要
 
 ### SQL语句及种类
 
@@ -20,7 +22,7 @@
 
 以分号结尾、不区分大小写、日期和字符串用单引号、单词用半角空格或换行分隔
 
-## 创建表
+## 1.4 创建表
 
 ### 创建数据库
 
@@ -75,7 +77,7 @@ product_id CHAR(4) NOT NULL,
 PRIMARY KEY (product_id)
 ```
 
-## 删除和更新表
+## 1.5 删除和更新表
 
 ### 删除表
 
@@ -85,7 +87,7 @@ DROP TABLE <表名>;
 DROP TABLE Product;
 ```
 
-DROP之后无法回撤
+DROP之后无法回撤。
 
 ### 更新表的定义
 
@@ -128,7 +130,7 @@ RENAME TABLE Poduct to Product;
 
 # 2 查询基础
 
-## 2-1 SELECT语句基础
+## 2.1 SELECT语句基础
 
 ### 列的查询
 
@@ -424,4 +426,93 @@ HAVING COUNT(*) = 2;
 
 和包含GROUP BY子句的SELECT子句一样，能够使用的要素也只有三种：常数、聚合函数和聚合键。 
 
-另外，聚合键所对应的条件更适合写在WHERE子句中。
+聚合键所对应的条件在HAVING和WHERE中都可以使用，更适合写在WHERE子句中，处理速度更快。
+
+## 3.4 对查询结果进行排序
+
+### ORDER BY子句
+
+```SQL
+SELECT <列名1>, <列名2>, <列名3>, ……
+FROM <表名>
+ORDER BY <排序基准列1>, <排序基准列2>, ……
+
+SELECT product_id, product_name, sale_price, purchase_price
+FROM Product
+ORDER BY sale_price;
+```
+
+### 指定升序或降序
+
+```SQL
+SELECT product_id, product_name, sale_price, purchase_price
+FROM Product
+ORDER BY sale_price DESC;
+```
+
+### 指定多个排序键
+
+```SQL
+SELECT product_id, product_name, sale_price, purchase_price
+FROM Product
+ORDER BY sale_price, product_id;
+```
+
+### NULL的顺序
+
+MySQL中NULL排在最开始。
+
+### 在排序键中使用显示用的别名
+
+GROUP BY执行顺序在SELECT之前，所以不能使用定义的别名。但ORDER BY可以
+
+```SQL
+SELECT product_id AS id, product_name, sale_price AS sp, purchase_price
+FROM Product
+ORDER BY sp, id;
+```
+
+### ORDER BY子句中可以使用的列
+
+ORDER BY可以使用表中不包含在SELECT子句中的列。
+
+```SQL
+SELECT product_name, sale_price, purchase_price
+FROM Product
+ORDER BY product_id;
+```
+
+也可以使用聚合函数。
+
+```SQL
+SELECT product_type, COUNT(*)
+FROM Product
+GROUP BY product_type
+ORDER BY COUNT(*);
+```
+
+SELECT子句中也不必包含COUNT(*)。
+
+# 4 数据更新
+
+## 4.1 数据的插入（INSERT）
+
+在INSERT之前，我们要首先创建一个表。
+
+```SQL
+CREATE TABLE ProductIns
+(product_id CHAR(4) NOT NULL,
+product_name VARCHAR(100) NOT NULL,
+product_type VARCHAR(32) NOT NULL,
+sale_price INTEGER DEFAULT 0,
+purchase_price INTEGER ,
+regist_date DATE ,
+PRIMARY KEY (product_id));
+```
+
+### INSERT语句的基本语法
+
+```SQL
+INSERT INTO <表名> (列1, 列2, 列3, ……) VALUES (值1, 值2, 值3, ……);
+```
+
