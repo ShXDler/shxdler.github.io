@@ -514,5 +514,212 @@ PRIMARY KEY (product_id));
 
 ```SQL
 INSERT INTO <表名> (列1, 列2, 列3, ……) VALUES (值1, 值2, 值3, ……);
+
+INSERT INTO ProductIns (product_id, product_name, product_type, sale_price, purchase_price, regist_date) VALUES ('0001', 'T恤衫', '衣服', 1000, 500, '2009-09-20');
 ```
+
+### 列清单的省略
+
+对表进行全列INSERT时，可以省略列清单。
+
+```SQL
+INSERT INTO ProductIns VALUES ('0005', '高压锅', '厨房用具', 6800, 5000, '2009-01-15');
+```
+
+### 插入NULL
+
+```SQL
+INSERT INTO ProductIns (product_id, product_name, product_type, sale_price, purchase_price, regist_date) VALUES ('0006', '叉子', '厨房用具', 500, NULL, '2009-09-20');
+```
+
+### 多行INSERT
+
+```SQL
+INSERT INTO ProductIns VALUES ('0009', '打孔器', '办公用品', 500, 320, '2009-09-11'),
+('0010', '运动T恤', '衣服', 4000, 2800, NULL),
+('0011', '菜刀', '厨房用具', 3000, 2800, '2009-09-20');
+```
+
+多行一个出错所有数据都不会插入。
+
+### 插入默认值
+
+创建表时可以使用DEFAULT约束设置默认值。
+
+```SQL
+CREATE TABLE ProductIns
+(product_id CHAR(4) NOT NULL,
+sale_price INTEGER DEFAULT 0,
+PRIMARY KEY (product_id));
+```
+
+在插入时，可以通过显式插入：
+
+```SQL
+INSERT INTO ProductIns (product_id, product_name, product_type, sale_price, purchase_price, regist_date) VALUES ('0007', '擦菜板', '厨房用具', DEFAULT, 790, '2009-04-28');
+```
+
+或者直接省略：
+
+```SQL
+INSERT INTO ProductIns (product_id, product_name, product_type, purchase_price, regist_date) VALUES ('0007', '擦菜板', '厨房用具', 790, '2009-04-28');
+```
+
+如果省略了没有设定默认值的列，该列的值就会被设定为NULL。如果省略了设置NOT NULL同时没有DEFAULT的列，INSERT语句就会出错。
+
+### 从其他表中复制数据
+
+创建表
+
+```SQL
+CREATE TABLE ProductCopy
+(product_id CHAR(4) NOT NULL,
+product_name VARCHAR(100) NOT NULL,
+product_type VARCHAR(32) NOT NULL,
+sale_price INTEGER ,
+purchase_price INTEGER ,
+regist_date DATE ,
+PRIMARY KEY (product_id));
+```
+
+复制数据
+
+```SQL
+INSERT INTO ProductCopy (product_id, product_name, product_type, sale_price, purchase_price, regist_date)
+SELECT product_id, product_name, product_type, sale_price, purchase_price, regist_date
+FROM Product;
+```
+
+创建商品种类表
+
+```SQL
+CREATE TABLE ProductType
+(product_type VARCHAR(32) NOT NULL,
+sum_sale_price INTEGER ,
+sum_purchase_price INTEGER ,
+PRIMARY KEY (product_type));
+```
+
+复制合计表
+
+```SQL
+INSERT INTO ProductType (product_type, sum_sale_price, sum_purchase_price)
+SELECT product_type, SUM(sale_price), SUM(purchase_price)
+FROM Product
+GROUP BY product_type;
+```
+
+## 4.2 数据的删除（DELETE）
+
+### DROP TABLE和DELETE语句
+
+DROP TABLE会完全删除表，但DELETE会留下表，删除表中数据。
+
+### DELETE语句的基本用法
+
+```SQL
+DELETE FROM <表名>;
+
+DELETE FROM Product;
+```
+
+### 指定删除对象的DELETE语句（搜索型DELETE）
+
+```SQL
+DELETE FROM <表名>
+WHERE <条件>;
+
+DELETE FROM Product
+WHERE sale_price >= 4000;
+```
+
+### 删除和舍弃
+
+MySQL中的TRUNCATE语句可以删除表中全部数据，处理速度要比DELETE更快。
+
+```SQL
+TRUNCATE Product;
+```
+
+## 4.3 数据的更新（UPDATE）
+
+```SQL
+UPDATE <表名>
+SET <列名> = <表达式>;
+
+UPDATE Product
+SET regist_date = '2009-10-10';
+```
+
+UPDATE也会对原取值为NULL的数据行生效。
+
+### 指定条件的UPDATE语句
+
+```SQL
+UPDATE <表名>
+SET <列名> = <表达式>
+WHERE <条件>;
+
+UPDATE Product
+SET sale_price = sale_price * 10
+WHERE product_type = '厨房用具';
+```
+
+### 使用NULL进行更新
+
+```SQL
+UPDATE Product
+SET regist_date = NULL
+WHERE product_id = '0008';
+```
+
+只有未设置NOT NULL约束和主键约束的列才可以清空为NULL。
+
+### 多列更新
+
+```SQL
+UPDATE Product
+SET sale_price = sale_price * 10,
+purchase_price = purchase_price / 2
+WHERE product_type = '厨房用具';
+
+UPDATE Product
+SET (sale_price, purchase_price) = (sale_price * 10, purchase_price / 2)
+WHERE product_type = '厨房用具';
+```
+
+（方法一注意有逗号，方法二在MySQL中似乎不可行）
+
+## 4.4 事务
+
+```SQL
+START TRANSACTION;
+DML语句1;
+DML语句2;
+DML语句3;
+.. .
+事务结束语句（COMMIT或者ROLLBACK）;
+
+START TRANSACTION;
+-- 将运动T恤的销售单价降低1000日元
+UPDATE Product
+SET sale_price = sale_price - 1000
+WHERE product_name = '运动T恤';
+-- 将T恤衫的销售单价上浮1000日元
+UPDATE Product
+SET sale_price = sale_price + 1000
+WHERE product_name = 'T恤衫';
+COMMIT;
+```
+
+COMMIT是提交改动，并且无法进行恢复；ROLLBACK则回撤进行过的DML操作，回滚到事务开始之前的状态。
+
+### ACID特性
+
+原子性（Atomicity）：事务结束时更新处理要么全部执行要么完全不执行。
+一致性（Consistency）：事务中的处理要满足数据库的约束。
+隔离性（Isolation）：不同事务之间互不干扰，在一个事务结束前，对其他事务不可见。
+持久性（Durability）：事务结束后，DBMS能够保证该时间点的数据状态被保存。
+
+# 5 复杂查询
 
