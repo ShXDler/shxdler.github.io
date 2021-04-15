@@ -12,3 +12,6 @@
     - [Chapter 6 支持向量机](mlnn/ml/Chapter6.md)
     - [Chapter 7 贝叶斯分类器](mlnn/ml/Chapter7.md)
     - [Chapter 8 集成学习](mlnn/ml/Chapter8.md)
+
+- [MySQL based SQL](SQL/)
+  - [SQL base](SQL/SQLbase.md)
