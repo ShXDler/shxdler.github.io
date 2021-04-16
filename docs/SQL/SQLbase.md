@@ -723,3 +723,154 @@ COMMIT是提交改动，并且无法进行恢复；ROLLBACK则回撤进行过的
 
 # 5 复杂查询
 
+## 5.1 视图
+
+使用视图时不会讲数据保存到存储设备中。
+
+### 创建视图的方法
+
+```SQL
+CREATE VIEW 视图名称(<视图列名1>, <视图列名2>, ……)
+AS
+<SELECT语句>
+
+CREATE VIEW ProductSum (product_type, cnt_product)
+AS
+SELECT product_type, COUNT(*)
+FROM Product
+GROUP BY product_type;
+```
+
+使用视图
+
+```SQL
+SELECT product_type, cnt_product
+FROM ProductSum;
+```
+
+以视图为基础创建视图
+
+```SQL
+CREATE VIEW ProductSumJim (product_type, cnt_product)
+AS
+SELECT product_type, cnt_product
+FROM ProductSum
+WHERE product_type = '办公用品';
+
+SELECT product_type, cnt_product
+FROM ProductSumJim;
+```
+
+另外，对多数DBMS来说，多重视图会降低SQL的性能。视图的使用也有两个限制：
+
+①定义视图时不要使用ORDER BY子句
+
+因为视图和表一样，数据行是没有顺序的，所以不是所有DBMS都支持在定义视图时使用ORDER BY（其实MySQL可以）。
+
+②对视图进行更新
+
+更新视图时要求定义视图满足一定的条件，即更新视图时能够唯一的确定更新原表的方法。换句话说，视图在SQL中的存储和调用函数就是一个SELECT语句，所谓的更新视图实际上是在直接更新原表。
+
+### 删除视图
+
+```SQL
+DROP VIEW 视图名称(<视图列名1>, <视图列名2>, ……);
+
+DROP VIEW ProductSum;
+DROP VIEW ProductSum CASCADE;
+```
+
+在MySQL中，删除某视图后，所有基于它创建出来的视图也无法再使用。若要将这些视图也一并删除，可以使用CASCADE选项；而如果再次创建删除的视图，那么这些视图也可以重新恢复。
+
+## 5.2 子查询
+
+子查询就是将用来定义视图的SELECT语句直接用于FROM子句当中。
+
+```SQL
+SELECT product_type, cnt_product
+FROM ( SELECT product_type, COUNT(*) AS cnt_product
+	FROM Product
+	GROUP BY product_type ) AS ProductSum;
+```
+
+也可以多层嵌套
+
+```SQL
+SELECT product_type, cnt_product
+FROM (SELECT *
+	FROM (SELECT product_type, COUNT(*) AS cnt_product
+		FROM Product
+		GROUP BY product_type) AS ProductSum
+		WHERE cnt_product = 4) AS ProductSum2;
+```
+
+### 子查询的名称
+
+使用子查询时，需要使用AS关键字设定名称。
+
+### 标量子查询
+
+标量子查询（scalar subquery）能且只能返回1行1列的结果。
+
+```SQL
+SELECT product_id, product＿name, sale_price
+FROM Product
+WHERE sale_price > AVG(sale_price);
+```
+
+如果我们想查询销售单价高于平均值的商品，使用上面的代码则会出错，因为聚合函数不能在WHERE中使用。
+
+首先考虑能够计算平均值的查询
+
+```SQL
+SELECT AVG(sale_price)
+FROM Product;
+```
+
+在WHERE中使用子查询
+
+```SQL
+SELECT product_id, product_name, sale_price
+FROM Product
+WHERE sale_price > (SELECT AVG(sale_price)
+					FROM Product);
+```
+
+### 标量子查询的书写位置
+
+能够使用常数或者列名的地方，包括SELECT、GROUP BY、HAVING、ORDER BY等，都可以使用标量子查询。
+
+```SQL
+SELECT product_id,
+	product_name,
+	sale_price,
+    (SELECT AVG(sale_price)
+    FROM Product) AS avg_price
+FROM Product;
+
+SELECT product_type, AVG(sale_price)
+FROM Product
+GROUP BY product_type
+HAVING AVG(sale_price) > (SELECT AVG(sale_price)
+							FROM Product);
+```
+
+写在SELECT中可以新建一列每一行输出聚合函数的值，写在HAVING中可以将每组的聚合函数值与总体的聚合函数值作比较。
+
+## 5.3 关联子查询
+
+核心思想是将多行的查询转换成关联的标量子查询
+
+```SQL
+SELECT product_type, product_name, sale_price
+FROM Product AS P1
+WHERE sale_price > (SELECT AVG(sale_price)
+					FROM Product AS P2
+					WHERE P1.product_type = P2.product_type);
+```
+
+习题5-4中，要求输出每一类售价的平均值，不难得到要在SELECT中使用关联子查询，其中的条件仍为P1.xx =P2.xx，因为SQL先执行FROM，再执行SQL，所以即使P1定义在SELECT后面，但是因为它在FROM中所以先执行。
+
+# 6 函数、谓词、CASE表达式
+
+#  
