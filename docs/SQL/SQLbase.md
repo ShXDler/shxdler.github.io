@@ -57,6 +57,8 @@ PRIMARY KEY (product_id));
 
 INTEGER 整型
 
+NUMERIC 全体位数+小数位数
+
 CHAR 定长字符型（不够长度空格补齐）
 
 VARCHAR 变长字符型（不够长度不补空格）
@@ -873,4 +875,173 @@ WHERE sale_price > (SELECT AVG(sale_price)
 
 # 6 函数、谓词、CASE表达式
 
-#  
+## 6.1 函数
+
+### 算术函数
+
+ABS 绝对值
+MOD（被除数，除数） 求余
+ROUND（数，保留小数位数） 四舍五入
+
+### 字符串函数
+
+CONCAT(str1, str2, ...)  拼接字符串
+LENGTH(str) 字符串长度
+LOWER(str) 小写转换
+UPPER(str) 大写转换
+REPLACE(str1, str2, str3) 将str1中的str2替换成str3
+SUBSTRING(str1 FROM start FOR length) 从str1中的第start个字符开始截取长度为length的子串
+
+### 日期函数
+
+CURRENT_DATE 当前日期
+CURRENT_TIME 当前时间
+CURRENT_TIMESTAMP 当前日期和时间
+EXTRACT(element FROM date)
+
+```MySQL
+SELECT CURRENT_TIMESTAMP,
+		EXTRACT(YEAR FROM CURRENT_TIMESTAMP) AS year,
+		EXTRACT(MONTH FROM CURRENT_TIMESTAMP) AS month,
+		EXTRACT(DAY FROM CURRENT_TIMESTAMP) AS day,
+		EXTRACT(HOUR FROM CURRENT_TIMESTAMP) AS hour,
+		EXTRACT(MINUTE FROM CURRENT_TIMESTAMP) AS minute,
+		EXTRACT(SECOND FROM CURRENT_TIMESTAMP) AS second;
+```
+
+### 转换函数
+
+转换在SQL中指数据类型的转换和值的转换
+
+CAST(before AS type) 将before转成type类型
+
+```MySQL
+SELECT CAST('0001' AS SIGNED INTEGER) AS int_col;
+SELECT CAST('2009-12-14' AS DATE) AS date_col;
+```
+
+COALESCE(data1, data2, ...) 返回参数中左侧开始第1个不是NULL 的值
+
+```MySQL
+SELECT COALESCE(str2, 'NULL')
+FROM SampleStr;
+```
+
+例如使用上述代码，可以将数据表中的NULL转换成'NULL'
+
+## 6.2 谓词
+
+### 字符串的部分一致查询（LIKE）
+
+```MySQL
+WHERE str LIKE 'aa%'
+WHERE str LIKE '%aa%'
+WHERE str LIKE '%aa'
+WHERE str LIKE 'aa__'
+```
+
+### 范围查询（BETWEEN）
+
+BETWEEN会包含两个临界值（也就是<=和>=）
+
+```MySQL
+WHERE sale_price BETWEEN 100 AND 1000;
+```
+
+### 判断是否为NULL（IS NULL、IS NOT NULL） 
+
+```MySQL
+WHERE purchase_price IS NULL;
+WHERE purchase_price IS NOT NULL;
+```
+
+### OR的简便用法（IN）
+
+```MySQL
+WHERE purchase_price IN (320, 500, 5000);
+WHERE purchase_price NOT IN (320, 500, 5000);
+```
+
+注意，如果IN后使用了NULL，那么结果和不使用NULL一样（or a=NULL不是TRUE）
+而如果NOT IN后使用了NULL，则返回空集（and a<>NULL不是true）
+
+### 使用子查询作为IN谓词的参数
+
+```MySQL
+SELECT product_name, sale_price
+FROM Product
+WHERE product_id IN (SELECT product_id
+					FROM ShopProduct
+					WHERE shop_id = '000C');
+```
+
+也就是将子查询得到的结果作为IN的参数
+
+### EXIST谓词
+
+EXIST只有一个参数，并且通常都会使用关联子查询作为参数。
+
+```MySQL
+SELECT product_name, sale_price
+FROM Product AS P
+WHERE EXISTS (SELECT *
+			FROM ShopProduct AS SP
+			WHERE SP.shop_id = '000C'
+			AND SP.product_id = P.product_id);
+```
+
+其中SELECT *替换成任何列都不改变结果，因为EXIST只会判断是否存在满足子查询中WHERE子句指定的条件的记录。
+
+## 6.3 CASE表达式
+
+```MySQL
+CASE WHEN <求值表达式> THEN <表达式>
+	WHEN <求值表达式> THEN <表达式>
+	WHEN <求值表达式> THEN <表达式>
+	...
+	ELSE <表达式>
+END
+
+SELECT product_name,
+	CASE WHEN product_type = '衣服'
+		THEN 'A ：' | | product_type
+		WHEN product_type = '办公用品'
+		THEN 'B ：' | | product_type
+		WHEN product_type = '厨房用具'
+		THEN 'C ：' | | product_type
+		ELSE NULL
+	END AS abc_product_type
+FROM Product;
+```
+
+不同类型的和汇总到不同列上
+
+```MySQL
+SELECT SUM(CASE WHEN product_type = '衣服'
+			THEN sale_price ELSE 0 END) AS sum_price_clothes,
+		SUM(CASE WHEN product_type = '厨房用具'
+			THEN sale_price ELSE 0 END) AS sum_price_kitchen,
+		SUM(CASE WHEN product_type = '办公用品'
+			THEN sale_price ELSE 0 END) AS sum_price_office
+FROM Product;
+```
+
+简单表达式
+
+```MySQL
+SELECT product_name,
+	CASE product_type
+		WHEN '衣服' THEN 'A ：' | | product_type
+		WHEN '办公用品' THEN 'B ：' | | product_type
+		WHEN '厨房用具' THEN 'C ：' | | product_type
+		ELSE NULL
+	END AS abc_product_type
+FROM Product;
+```
+
+MySQL中可以使用IF，但是往往较为繁琐。
+
+# 7 集合运算
+
+## 7.1 表的加减法
+
