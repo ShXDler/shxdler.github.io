@@ -1025,6 +1025,8 @@ SELECT product_name,
 FROM Product;
 ```
 
+CASE所有分支的返回值数据类型必须一致。
+
 不同类型的和汇总到不同列上
 
 ```MySQL
@@ -1158,4 +1160,111 @@ ROW_NUMBER：1、2、3、4
 窗口函数只能在SELECT子句中使用
 
 #### 使用聚合函数作为窗口函数
+
+```MySQL
+SELECT product_id, product_name, sale_price,
+SUM(sale_price) OVER (ORDER BY product_id) AS current_sum
+FROM Product;
+```
+
+使用SUM窗口函数得到的和不仅仅是合计值，而是按照ORDER BY的顺序进行累计求小计，AVG等也类似
+
+#### 计算移动平均
+
+窗口中进行的汇总范围称框架。
+
+```MySQL
+SELECT product_id, product_name, sale_price,
+AVG (sale_price) OVER (ORDER BY product_id
+ROWS 2 PRECEDING) AS moving_avg
+FROM Product;
+```
+
+其中ROWS 2 PRECEDING将范围限定为当前行之前的2行（加上自己一共3行），使用FOLLOWING关键字可以改为之后的行，如果要同时使用前后行，可以同时使用两个关键字
+
+```MySQL
+SELECT product_id, product_name, sale_price,
+AVG (sale_price) OVER (ORDER BY product_id
+ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_avg
+FROM Product;
+```
+
+#### 两个ORDER BY
+
+OVER内部的ORDER BY决定了窗口函数的计算顺序，而外部的ORDER BY则决定了输出的排序。
+
+### 8.2 GROUPING运算符
+
+#### ROLLUP-同时得到合计和小计
+
+想同时得到合计和小计，可以分别进行计算再UNION，这样耗时耗力，可以使用GROUPING运算符简化
+
+```MySQL
+SELECT product_type, SUM(sale_price) AS sum_price
+FROM Product
+GROUP BY product_type WITH ROLLUP;
+```
+
+ROLLUP运算符的作用就是计算出不同聚合键组合的结果：
+GROUP BY ()和GROUP BY (product_type)
+
+该合计行记录成为超级分组记录（super group row），即未使用GROUP BY的合计行
+
+```MySQL
+SELECT product_type, regist_date, SUM(sale_price) AS sum_price
+FROM Product
+GROUP BY product_type, regist_date WITH ROLLUP;
+```
+
+这里计算了三种组合的结果：
+GROUP BY ()和GROUP BY (product_type)和GROUP BY(product_type, regist_date)
+
+#### GROUPING-让NULL更加容易分辨 
+
+```MySQL
+SELECT GROUPING(product_type) AS product_type,
+GROUPING(regist_date) AS regist_date, SUM(sale_price) AS sum_price
+FROM Product
+GROUP BY product_type, regist_date WITH ROLLUP;
+```
+
+GROUPING可以判断超级分组记录的NULL和普通NULL，从而进行列内容的更改
+
+```MySQL
+SELECT CASE WHEN GROUPING(product_type) = 1
+			THEN '商品种类 合计'
+			ELSE product_type END AS product_type,
+		CASE WHEN GROUPING(regist_date) = 1
+			THEN '登记日期 合计'
+			ELSE CAST(regist_date AS CHAR) END AS regist_date,
+		SUM(sale_price) AS sum_price
+FROM Product
+GROUP BY product_type, regist_date WITH ROLLUP;
+```
+
+#### CUBE-用数据搭积木
+
+```SQL server
+SELECT CASE WHEN GROUPING(product_type) = 1
+THEN '商品种类 合计'
+ELSE product_type END AS product_type,
+CASE WHEN GROUPING(regist_date) = 1
+THEN '登记日期 合计'
+ELSE CAST(regist_date AS CHAR) END AS regist_date,
+SUM(sale_price) AS sum_price
+FROM Product
+GROUP BY CUBE(product_type, regist_date);
+```
+
+```MySQL
+SELECT CASE WHEN GROUPING(product_type) = 1
+THEN '商品种类 合计'
+ELSE product_type END AS product_type,
+CASE WHEN GROUPING(regist_date) = 1
+THEN '登记日期 合计'
+ELSE CAST(regist_date AS CHAR) END AS regist_date,
+SUM(sale_price) AS sum_price
+FROM Product
+GROUP BY GROUPING SETS (product_type, regist_date);
+```
 
