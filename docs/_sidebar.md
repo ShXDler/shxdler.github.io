@@ -15,3 +15,4 @@
 
 - [MySQL based SQL](SQL/)
   - [SQL base](SQL/SQLbase.md)
+  - [SQL FAQ](SQL/SQLFAQ.md)
