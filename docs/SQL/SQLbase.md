@@ -315,6 +315,10 @@ SELECT COUNT(*)
 FROM Product;
 ```
 
+1.count(1)与count(*)得到的结果一致，包含null值。
+2.count(字段)不计算null值
+3.count(null)结果恒为0
+
 ### 计算NULL之外的数据的行数
 
 ```SQL
@@ -887,6 +891,10 @@ ROUND（数，保留小数位数） 四舍五入
 
 CONCAT(str1, str2, ...)  拼接字符串
 LENGTH(str) 字符串长度
+CHAR_LENGTH(str) 字符串长度
+
+> LENGTH()是按照字节来统计的，**CHAR_LENGTH**()是按照字符来统计的。例如：一个包含5个字符且每个字符占两个字节的字符串而言，LENGTH()返回长度10，**CHAR_LENGTH**()返回长度是5；如果对于单字节的字符，则两者返回结果相同。
+
 LOWER(str) 小写转换
 UPPER(str) 大写转换
 REPLACE(str1, str2, str3) 将str1中的str2替换成str3
@@ -908,6 +916,9 @@ SELECT CURRENT_TIMESTAMP,
 		EXTRACT(MINUTE FROM CURRENT_TIMESTAMP) AS minute,
 		EXTRACT(SECOND FROM CURRENT_TIMESTAMP) AS second;
 ```
+
+DATEDIFF(date1,date2) 计算date1在date2之后多少天
+YEAR(), MONTH(),... 计算年份月份
 
 ### 转换函数
 
@@ -1045,3 +1056,63 @@ MySQL中可以使用IF，但是往往较为繁琐。
 
 ## 7.1 表的加减法
 
+### 求并集（UNION）
+
+```MySQL
+SELECT product_id, product_name
+FROM Product
+UNION
+SELECT product_id, product_name
+FROM Product2;
+```
+
+注意：进行求并集的对象列数必须相同，且列的类型也必须一致，另外可以使用任何SELECT语句，但ORDER BY子句只能在最后使用一次。
+
+保留重复行可以使用ALL选项
+
+```MySQL
+SELECT product_id, product_name
+FROM Product
+UNION ALL
+SELECT product_id, product_name
+FROM Product2;
+```
+
+MySQL中没有直接求交集和差集的操作
+
+## 7.2 连接
+
+### 内连接（INNER JOIN）
+
+```MySQL
+SELECT SP.shop_id, SP.shop_name, SP.product_id, P.product_name, P.sale_price
+FROM ShopProduct AS SP INNER JOIN Product AS P
+ON SP.product_id = P.product_id;
+```
+
+ON后面指定的是两张表连接所使用的列（连接键），连接条件还可以使用其他谓词。
+
+### 外连接（OUTER JOIN）
+
+```MySQL
+SELECT SP.shop_id, SP.shop_name, SP.product_id, P.product_name, P.sale_price
+FROM ShopProduct AS SP RIGHT OUTER JOIN Product AS P
+ON SP.product_id = P.product_id;
+```
+
+使用LEFT或RIGHT指定主表
+
+### 3张表以上的连接
+
+```SQL
+SELECT SP.shop_id, SP.shop_name, SP.product_id, P.product_name, P.sale_price, IP.inventory_quantity
+FROM ShopProduct AS SP INNER JOIN Product AS P
+ON SP.product_id = P.product_id
+	INNER JOIN InventoryProduct AS IP
+	ON SP.product_id = IP.product_id
+WHERE IP.inventory_id = 'P001';
+```
+
+相当于先内连接SP和IP，在对得到的内连接集和P进行内连接。
+
+### 交叉连接（CROSS JOIN）

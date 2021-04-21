@@ -1,6 +1,6 @@
 *原文地址：ACL2019-*[Barack's Wife Hillary: Using Knowledge-Graphs for Fact-Aware Language Modeling](https://arxiv.org/abs/1906.07241)-*Robert Logan, Nelson F. Liu, Matthew E. Peters, Matt Gardner and Sameer Singh*
 
-# 1.简介
+## 1.简介
 
 在语言生成上，现有模型已经很好地做到了语法上的连贯性，在一些常识和基本知识的推断上也表现不错。然而，这些模型往往最多只能记住训练中提到的事实，所以它们在稀缺或未知领域上生成语句的“事实正确”（*factually correct*）能力仍有待提升。作者用一个生动的例子描述了这一现象，在下图的语句中，AWD-LSTM模型认为“Play Station”的可能性比“Game Boy”要高（而实际上该处应该是Game Boy），产生了事实上的错误，其根源在于这一类模型往往是在整体词汇空间上对概率分布进行概率表示。
 
@@ -16,7 +16,7 @@
 
 从结果来看，KGLM模型和AWD-LSTM相比在整体上拥有较低的困惑度，尤其是未知领域导致的困惑度。同时，在事实完成（*factual completion*）方面，作者也使用了一系列如题目所示的例子：“*Barack is married to _____.*”，结果发现KGLM也有着更高的准确度。另外，KGLM能够准确地生成稀缺实体，并且可以通过修改知识图谱的方法进行人为控制。
 
-# 2.知识图谱语言模型（KGLM）
+## 2.知识图谱语言模型（KGLM）
 
 传统意义上的语言模型计算的都是在已知部分文本内容时单词出现的条件概率$p(x_t|x_{<t})$ ，以循环神经网络（RNN）为例：
 
@@ -32,7 +32,7 @@ $${\mathcal KG}=\{(p,r,e)|p\in{\mathcal E},r\in{\mathcal R},e\in{\mathcal E}\}$$
 
 $${\mathcal KG}_{<t}=\{(p,r,e)|p\in{\mathcal E}_{<t},r\in{\mathcal R},e\in{\mathcal E}\}$$
 
-## 2.1 语言生成
+### 2.1 语言生成
 
 KGLM的主要目标是从知识图谱中生成实体和事实，它会首先将上文中已经出现的实体囊括进局部知识图谱中，以便生成上文中已经出现过的事实。同时会进一步将能够反映新实体的额外实体和事实加入局部知识图谱。正式来讲，模型计算 $p(x_t,{\mathcal E}_t|x_{<t},{\mathcal E}_{<t})$ 的过程如下：
 
@@ -58,7 +58,7 @@ c. 如果 $t_t= \emptyset$ ，则 $e_t=\emptyset$
 
 上述算法计算的 $p(x_t,{\mathcal E}_t|x_{<t},{\mathcal E}_{<t})$ 与 $p(x_t|x_{<t})$ 有些许不同，为解决这个问题，作者在后文提到使用了 $p({\rm x})=\sum_{\mathcal E}p({\rm x},{\mathcal E})$ 进行了单词实体的边际概率计算。
 
-## 2.2 分布参数化
+### 2.2 分布参数化
 
 作者使用前文提到的LSTM算法对隐状态 ${\bf h}_t$ 进行计算，并将其分解成三部分： ${\bf h}_t=[{\bf h}_{t,x};{\bf h}_{t,p};{\bf h}_{t,r}]$ ，分别用来预测单词、父级实体和关系，实体类型 $t_t$ 则通过对 ${\bf h}_{t,x}$ 进行单层softmax计算得到。
 
@@ -70,7 +70,7 @@ b. 在 $t_t=\sf related$ 时，模型使用 $p(p_t)={\rm softmax}({\bf v}_p\cdot
 
 **输出实体**：如果 $e_t=\emptyset$ ，这意味着已经没有实体可以继续输出了，模型将在词汇表中再次使用LSTM算法。如果存在实体可以输出，则构建一个原始词汇表和含有所有出现过的实体及其关联词汇表上的分布，这一分布是已知 $e_t$ 和 $x_t$ 下的条件分布。为了计算原始词汇表的得分，作者使用 ${\bf h}_{t,x}'={\bf W}_{\rm proj}[{\bf h}_{t,x};{\bf v}_{e_t}]$ 代替 $h_{t,x}$ ，其中 ${\bf W}_{\rm proj}$ 是将合并向量投影至与 ${\bf h}_{t,x}$ 相同的向量空间的一个可学习权重矩阵。同时，作者也使用了一个LSTM结构进行同义词表概率的计算： $p(x_t=a_j)\propto{\rm exp}[\sigma(({\bf h}_{t,x}')^\top{\bf W}_{\rm copy}){\bf a}_j]$ 。
 
-# 3.*Linked WikiText-2* 数据集
+## 3.*Linked WikiText-2* 数据集
 
 除了模型因素之外，语言模型中事实推断实现的另一难点在于难以获取训练数据。标准的语料库只包含了文字，没有实体和关系的标注，而建立在关系抽取的数据集则在文本和知识图谱间架起了一座桥梁。*Linked WikiText-2*的目标则与*data-to-text*任务相似，作者感兴趣的是如何让语言模型能够动态地从知识图谱中获取事实知识。该数据集本身和Wikidata高度匹配，便于和基于*WikiText-2*训练的模型进行比较，同时Wikipedia的文章也广泛地涵盖了文本表达的事实。而在数据获取上，*WikiText-2*使用的API会丢弃一些有用的信息，而*Linked WikiText-2*则是直接从文章HTML提取信息。
 
@@ -90,7 +90,7 @@ b. 在 $t_t=\sf related$ 时，模型使用 $p(p_t)={\rm softmax}({\bf v}_p\cdot
 
 可以看到，每个标注根据当前图谱内容反映当前实体类型是 $\sf new$ 还是 $\sf related$ ，值得注意的是这种方法也会因为Wikidata的数据缺失产生错误。表中反映对 $\sf Nintendo$ 添加了两组联系（ $\sf R:manu$ 和 $\sf platform$ ），尽管这种方法会有缺失和错误现象，但是它生成的标注更多而且更具细节，有助于KGLM的训练。
 
-# 4.KGLM的训练和推断
+## 4.KGLM的训练和推断
 
 **预训练知识图谱嵌入**：为了预测未出现过的字词，本文使用了TransE预训练嵌入模型，在给定 $(p,r,e)$ 时，通过最小化距离 $\delta({\rm v}_p,{\rm v}_r,{\rm v}_e)=||{\rm v}_p+{\rm v}_r-{\rm v}_e||^2$ 学习嵌入向量，最大边际损失函数定义为 ${\mathcal L}=\max(0,\gamma+\delta({\rm v}_p,{\rm v}_r,{\rm v}_e)-\delta({\rm v}_p',{\rm v}_r,{\rm v}_e'))$ ，这里 $\gamma$ 代表边际， $p'$ 和 $e'$ 是随机选择的实体嵌入。
 
@@ -104,7 +104,7 @@ $$\ell(\Theta)=\sum_t\log p(x_t,{\mathcal E}_t|x_{<t},{\mathcal E}_{<t};\Theta)$
 
 $$\begin{aligned} p({\rm x})&=\sum_{\mathcal E}p(x,{\mathcal E})=\sum_{\mathcal E}\frac{p({\rm x},{\mathcal E})}{q({\mathcal E}|{\rm x})}q({\mathcal E}|{\rm x})\\ &\approx\frac 1N\sum_{{\mathcal E}\sim q}\frac{p({\rm x},{\mathcal E})}{q({\mathcal E}|{\rm x})} \end{aligned}$$
 
-# 5.实验结果
+## 5.实验结果
 
 完成模型构建后，作者选用了一些不同方面表现良好的模型进行对比。在**困惑度**水平上，作者选择了AWD-LSTM，ENTITYNLM，EntityCopyNet三个模型进行横向对比，结果发现KGLM在困惑度、未知惩罚困惑度都远比其他三个模型小。
 
