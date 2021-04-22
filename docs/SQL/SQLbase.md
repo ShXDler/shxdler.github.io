@@ -790,6 +790,8 @@ WHERE product_type = '厨房用具';
 
 ### 4.4 事务
 
+MyISAM不支持事务处理管理，InnoDB支持
+
 ```SQL
 START TRANSACTION;
 DML语句1;
@@ -810,7 +812,24 @@ WHERE product_name = 'T恤衫';
 COMMIT;
 ```
 
-COMMIT是提交改动，并且无法进行恢复；ROLLBACK则回撤进行过的DML操作，回滚到事务开始之前的状态。
+COMMIT是提交改动，并且无法进行恢复；ROLLBACK则回撤进行过的DML操作（包括INSERT、DELETE、UPDATE），回滚到事务开始之前的状态。
+
+#### 使用存档点
+
+```MySQL
+SAVEPOINT delete1;
+ROLLBACK TO delete1;
+```
+
+存档点在事务处理完成（ROLLBACK或COMMIT）后自动释放，也可以使用RELEASE SAVEPOINT释放。
+
+#### 更改默认提交
+
+```MySQL
+SET autocommit=0
+```
+
+停止自动提交更改，针对每个连接而不是服务器。
 
 #### ACID特性
 
@@ -1479,5 +1498,183 @@ WHERE prod_name REGEXP '[[:digit:]]{4}'
 
 通配符和正则表达式通常要求匹配表中所有行，可能非常耗时，并且很难明确地控制匹配
 
-### 10.1 使用全文本搜索
+MyISAM引擎支持全文本搜索
+
+### 10.1 使用MATCH()和AGAINST()全文本搜索
+
+MATCH()指定被搜索的列，AGAINST()指定要使用的搜索表达式
+
+```MySQL
+SELECT note_text
+FROM productnotes
+WHERE Match(note_text) Against('rabbit')
+```
+
+另外，全文本搜索还可以返回文本匹配的良好程度的排序数据
+
+```MySQL
+SELECT note_text,
+		MATCH(note_text) AGAINST('rabbit') AS rank
+FROM productnotes;
+```
+
+#### 扩展查询
+
+使用QUERY EXPANSION可以扩展查询条件，找出所有可能相关的结果
+
+```MySQL
+WHERE MATCH(note_text) AGAINST('anvils' WITH QUERY EXPANSION)
+```
+
+#### 布尔模式
+
+布尔模式可以增加许多约束条件
+
+```MySQL
+WHERE MATCH(note_text) AGAINST('heavy -rope*' IN BOOLEAN MODE)
+WHERE MATCH(note_text) AGAINST('"rabbit bait"' IN BOOLEAN MODE)
+WHERE MATCH(note_text) AGAINST('>heavy <rope' IN BOOLEAN MODE)
+WHERE MATCH(note_text) AGAINST('+heavy +(<combination)' IN BOOLEAN MODE)
+```
+
+| 布尔操作符 | 含义                 |
+| ---------- | -------------------- |
+| +          | 必须出现             |
+| -          | 必须不出现           |
+| >          | 包含，而且增加等级值 |
+| <          | 包含，而且减少等级值 |
+| ()         | 把词组成子表达式     |
+| ~          | 取消一个词的排序值   |
+| *          | 词尾的通配符         |
+| ""         | 定义一个短语         |
+
+MySQL规定了一条50%规则，如果一个词出现在50%以上
+的行中，则将它作为一个非用词忽略。50%规则不用于IN BOOLEAN
+MODE
+
+不具有词分隔符（包括日语和汉语）的语言不能恰当地返回全文
+本搜索结果
+
+忽略词中的单引号。例如，don't索引为dont
+
+## 11 使用存储过程
+
+### 11.1 创建存储过程
+
+```MySQL
+CREATE PROCEDURE productpricing()
+BEGIN
+SELECT AVG(prod_price) AS priceaverage
+FROM products;
+END;
+```
+
+在MySQL命令行中，有一些调整
+
+```MySQL
+DELIMITER //
+CREATE PROCEDURE productpricing()
+BEGIN
+SELECT AVG(prod_price) AS priceaverage
+FROM products;
+END //
+DELIMITER ;
+```
+
+这里使用DELIMITER告诉命令行使用//作为新的语句结束分隔符，使用完后在用DELIMITER ;恢复
+
+### 11.2 执行存储过程
+
+```MySQL
+CALL productpricing()
+```
+
+### 11.3 删除存储过程
+
+```MySQL
+DROP PROCEDURE productpricing;
+```
+
+### 11.4 使用参数
+
+```MySQL
+CREATE PROCEDURE productpricing(
+	OUT pl DECIMAL(8,2),
+    OUT ph DECIMAL(8,2),
+    OUT pa DECIMAL(8.2)
+)
+BEGIN
+	SELECT MIN(prod_price)
+	INTO pl
+	FROM products;
+	SELECT MAX(prod_price)
+	INTO ph
+	FROM products;
+	SELECT AVG(prod_price)
+	INTO pa
+	FROM products;
+END;
+```
+
+执行
+
+```MySQL
+CALL productpricing(@pricelow, @pricehigh, @priceaverage);
+SELECT @priceaverage;
+```
+
+包含输入的函数
+
+```SQL
+CREATE PROCEDURE ordertotal(
+	IN onumber INT,
+    OUT ototal DECIMAL(8,2)
+)
+BEGIN
+	SELECT Sum(item_price*quantity)
+	FROM orderitems
+	WHERE order_num = onumber
+	INTO ototal;
+END;
+```
+
+调用
+
+```MySQL
+CALL ordertotal(20005, @total);
+SELECT @total;
+```
+
+PROCEDURE中如果要使用局部变量可以使用
+
+```MySQL
+DECLARE total DECIMAL(8,2);
+```
+
+11.5 检查存储过程
+
+```MySQL
+SHOW CREATE PROCEDURE ordertotal;
+```
+
+## 12 游标
+
+游标可以让检索出来的行中前进或后退任意行，MySQL中的游标只能用于存储过程（和函数）
+
+游标使用前必须先声明，使用前必须先打开，使用后需要关闭（如果不手动关闭将会在到达END语句时自动关闭）。
+
+### 12.1 使用游标
+
+```MySQL
+CREATE PROCEDURE processorders)_
+BEGIN
+	DECLARE ordernumbers CURSOR
+	FOR
+	SELECT order_num FROM orders;
+	
+	OPEN ordernumbers;
+	FETCH ordernumbers INTO o;
+	CLOSE ordernumbers;
+END;
+```
 
