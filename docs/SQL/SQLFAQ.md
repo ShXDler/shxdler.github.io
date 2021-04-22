@@ -88,3 +88,13 @@ HAVING SUM(sale_date < '2019-01-01') = 0 AND SUM(sale_date > '2019-03-31') = 0;
 ### 统计符合某一条件的行
 
 可以使用SUM(condition)简化程序
+
+### 将空表变成NULL值
+
+```MySQL
+SELECT (SELECT DISTINCT Salary
+FROM Employee
+ORDER BY Salary DESC
+LIMIT 1,1) AS SecondHighestSalary;
+```
+

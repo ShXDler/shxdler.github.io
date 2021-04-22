@@ -65,7 +65,7 @@ VARCHAR 变长字符型（不够长度不补空格）
 
 DATE 日期型
 
-#### 约束设置
+#### 列约束设置
 
 NOT NULL非空约束
 
@@ -73,11 +73,77 @@ NOT NULL非空约束
 product_id CHAR(4) NOT NULL,
 ```
 
+自动增量（每个表只允许一列，并且必须被索引，比如成为主键）
+
+```MySQL
+product_id INT NOT ULL AUTO_INCREMENT,
+```
+
+想要获取这个值，可以使用
+
+```MySQL
+SELECT LAST_INSERT_ID()
+```
+
+默认值（MySQL中只能使用常量，不能使用函数作为默认值）
+
+```MySQL
+price INT NOT NULL DEFAULT 1
+```
+
+#### 表约束设置
+
 主键约束
 
 ```SQL
 PRIMARY KEY (product_id)
 ```
+
+外键约束
+
+```MySQL
+FOREIGN KEY (order_id) REFERENCES orders (order_id)
+```
+
+KEY后面的列为当前表的外键，REFERENCES后的表、列为主表及其主键
+
+唯一性约束
+
+```MySQL
+UNIQUE (Id_P)
+```
+
+一个表中可以有多个UNIQUE约束
+
+范围约束
+
+```MySQL
+CHECK (Id_P>0 AND City='Sandnes')
+```
+
+在约束前使用
+
+```MySQL
+CONSTRAINT xxx
+```
+
+可以为约束命名
+
+#### 引擎设置
+
+在CREATE TABLE语句结束后可以设置引擎，如
+
+```MySQL
+ENGINE = InnoDB
+ENGINE = MEMORY
+ENGINE = MyISAM
+```
+
+InnoDB事务处理很可靠，但不支持全文搜索
+MEMORY等同于MyISAM，但数据存储在内存中，速度很快，适合临时表
+MyISAM支持全文本搜索，但不支持事务处理
+
+另外，注意使用一个引擎的表不能引用具有使用不同引擎的表的外键
 
 ### 1.5 删除和更新表
 
@@ -101,12 +167,38 @@ ALTER TABLE <表名> ADD COLUMN <列的定义>;
 ALTER TABLE Product ADD COLUMN product_name_pinyin VARCHAR(100);
 ```
 
+添加表约束
+
+```MySQL
+ALTER TABLE Product
+ADD <约束>
+```
+
+添加默认值
+
+```MySQL
+ALTER TABLE Persons
+ALTER City SET DEFAULT 'SANDNES'
+```
+
 删除列
 
 ```SQL
 ALTER TABLE <表名> DROP COLUMN <列名>;
 
 ALTER TABLE Product DROP COLUMN product_name_pinyin;
+```
+
+撤销约束
+
+```MySQL
+ALTER TABLE Orders
+
+DROP INDEX uc_PersonID
+DROP PRIMARY KEY
+DROP FOREIGN KEY xxx
+DROP CHECK xxx
+ALTER City DROP DEFAULT
 ```
 
 插入数据
@@ -731,7 +823,7 @@ COMMIT是提交改动，并且无法进行恢复；ROLLBACK则回撤进行过的
 
 ### 5.1 视图
 
-使用视图时不会讲数据保存到存储设备中。
+使用视图时不会将数据保存到存储设备中。
 
 #### 创建视图的方法
 
@@ -883,9 +975,10 @@ WHERE sale_price > (SELECT AVG(sale_price)
 
 #### 算术函数
 
-ABS 绝对值
-MOD（被除数，除数） 求余
-ROUND（数，保留小数位数） 四舍五入
+ABS() 绝对值
+MOD(被除数，除数) 求余
+ROUND(数，保留小数位数) 四舍五入
+COS() EXP() PI() RAND() SIN() SQRT() TAN()
 
 #### 字符串函数
 
@@ -899,12 +992,18 @@ LOWER(str) 小写转换
 UPPER(str) 大写转换
 REPLACE(str1, str2, str3) 将str1中的str2替换成str3
 SUBSTRING(str1 FROM start FOR length) 从str1中的第start个字符开始截取长度为length的子串
+LTRIM() 删除字符串左侧多余空格
+RTRIM() 删除字符串右侧多余空格
+LOCATE() 找出串的一个子串
+LEFT() 返回串左边的字符
+RIGHT() 返回串右边的字符
+SOUNDEX() 返回串的SOUNDEX值（串的发音）
 
 #### 日期函数
 
-CURRENT_DATE 当前日期
-CURRENT_TIME 当前时间
-CURRENT_TIMESTAMP 当前日期和时间
+CURRENT_DATE, CURDATE() 当前日期
+CURRENT_TIME, CURTIME() 当前时间
+CURRENT_TIMESTAMP, NOW() 当前日期和时间
 EXTRACT(element FROM date)
 
 ```MySQL
@@ -918,7 +1017,11 @@ SELECT CURRENT_TIMESTAMP,
 ```
 
 DATEDIFF(date1,date2) 计算date1在date2之后多少天
-YEAR(), MONTH(),... 计算年份月份
+DATE(), TIME(), YEAR(), MONTH(), DAY(), DAYOFWEEK()... 计算时间元素
+DATE_FORMAT() 返回格式化的日期或字符串
+DATE_ADD() 灵活的日期运算函数
+ADDDATE() 增加一个日期
+ADDTIME() 增加一个时间
 
 #### 转换函数
 
@@ -1253,7 +1356,7 @@ THEN '登记日期 合计'
 ELSE CAST(regist_date AS CHAR) END AS regist_date,
 SUM(sale_price) AS sum_price
 FROM Product
-GROUP BY CUBE(product_type, regist_date);
+GROUP BY product_type, regist_date WITH CUBE;
 ```
 
 ```MySQL
@@ -1267,4 +1370,114 @@ SUM(sale_price) AS sum_price
 FROM Product
 GROUP BY GROUPING SETS (product_type, regist_date);
 ```
+
+CUBE和GROUPING SETS在MySQL中均不支持
+
+## 9 使用正则表达式进行搜索
+
+### 9.1 使用MySQL正则表达式
+
+```MySQL
+SELECT prod_name
+FROM products
+WHERE prod_name REGEXP '1000'
+ORDER BY prod_name;
+```
+
+REGEXP可以搜索所有**包含**'1000'的列值，正则表达式的匹配不区分大小写
+
+```MySQL
+WHERE prod_name REGEXP '.000'
+```
+
+'.'作为通配符，可以匹配任意一个字符
+
+#### 进行OR匹配
+
+ ```MySQL
+WHERE prod_name REGEXP '1000|2000'
+ ```
+
+匹配'1000'或'2000'
+
+#### 匹配几个字符之一
+
+```MySQL
+WHERE prod_name REGEXP '[123]Ton'
+WHERE prod_name REGEXP '[1|2|3]Ton'
+```
+
+#### 匹配范围
+
+```MySQL
+WHERE prod_name REGEXP '[0-9]'
+```
+
+使用[0-9]可以简化[0123456789]，相应的，对于字母还可以使用[a-z]
+
+#### 转义字符
+
+对'.'、'[]'等字符，应当使用转义符号'\\\\'进行转换，这两个反斜杠MySQL解释一个，正则表达式库解释另一个。
+
+| 元字符 | 含义     |
+| ------ | -------- |
+| \\\\f  | 换页     |
+| \\\\n  | 换行     |
+| \\\\r  | 回车     |
+| \\\\t  | 制表     |
+| \\\\v  | 纵向制表 |
+
+另外，对反斜杠本身，转义字符为'\\\\\\'
+
+#### 匹配字符类（character class）
+
+| 类        | 含义                                                        |
+| --------- | ----------------------------------------------------------- |
+| [:alnum:] | 任意字母和数字（同[a-zA-Z0-9]）                             |
+| [:alpha:] | 任意字符（同[a-zA-Z]）                                      |
+| [:blank:] | 空格和制表（同[\\\\t]）                                     |
+| [:cntrl:] | ASCII控制字符（ASCII0-31和127）                             |
+| [:digit:] | 任意数字（同[0-9]）                                         |
+| [:graph:] | 与[:print:]相同，但不包括空格                               |
+| [:lower:] | 任意小写字母（同[a-z]）                                     |
+| [:print:] | 任意可打印字符                                              |
+| [:punct:] | 不在[:alnum:]也不在[:cntrl:]的字符                          |
+| [:space:] | 包括空格在内的任意空白字符（同[\\\\f\\\\n\\\\r\\\\t\\\\v]） |
+| [:upper:] | 任意大写字母（同[A-Z]）                                     |
+| [:digit:] | 任意十六进制数字（同[a-fA-F0-9]）                           |
+
+#### 匹配多个实例
+
+将重复元字符加在目标字符后面即可实现
+
+| 重复元字符 | 说明                         |
+| ---------- | ---------------------------- |
+| *          | 0个或多个匹配                |
+| +          | 1个或多个                    |
+| ?          | 0个或1个                     |
+| {n}        | 指定数目的匹配               |
+| {n,}       | 不少于指定数目的匹配         |
+| {n,m}      | 匹配数目的范围（m不超过255） |
+
+```MySQL
+WHERE prod_name REGEXP '[0-9] sticks?'
+WHERE prod_name REGEXP '[[:digit:]]{4}'
+```
+
+#### 定位符
+
+| 定位元字符 | 含义     |
+| ---------- | -------- |
+| ^          | 文本开始 |
+| $          | 文本结尾 |
+| [[:<:]]    | 词开始   |
+| [[:>:]]    | 词结尾   |
+
+另外，^用在集合'[]'中时可以用来否定该集合
+
+## 10 全文本搜索
+
+通配符和正则表达式通常要求匹配表中所有行，可能非常耗时，并且很难明确地控制匹配
+
+### 10.1 使用全文本搜索
 

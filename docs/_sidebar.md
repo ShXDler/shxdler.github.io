@@ -14,5 +14,6 @@
     - [Chapter 8 集成学习](mlnn/ml/Chapter8.md)
 
 - [MySQL based SQL](SQL/)
-  - [SQL base](SQL/SQLbase.md)
+  - [SQL Base](SQL/SQLbase.md)
+  - [SQL Advanced](SQL/SQLAdvanced.md)
   - [SQL FAQ](SQL/SQLFAQ.md)
